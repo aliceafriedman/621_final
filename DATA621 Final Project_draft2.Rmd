@@ -1,0 +1,508 @@
+---
+title: "DATA621 Final Project"
+author: IvanTikhonov, Seung Min Song, Alice Firedman
+output:  
+  html_document:
+    toc: true
+    toc_float: true
+    show_toggle: true
+  pdf_document:
+  includes:
+  in_header: header.html
+css: ./lab.css
+highlight: pygments
+theme: cerulean
+toc: true
+toc_float: true
+linkcolor: blue
+---
+
+## Abstract 
+
+This study investigates the external factors affecting students' academic performance in secondary schools' math and Portuguese language courses. Using a quantitative dataset obtained through a survey, the study analyzes various external variables, such as students' health, social and demographic factors, study habits, and other relevant factors to understand their impact on academic performance.
+
+The study uses Multiple Linear Regression and Weighted Least Square Regression to examine the relationship between a dependent variable and multiple independent variables. Moreover, I used multiple graph to finds that although there is not a significant difference, male and female students without romantic involvement have better grades and students with internet access had a higher average grade than those without. Additionally, it was observed that the overall average grade decreases as travel time increases and frequency of drinking increases, the average score decreases accordingly. The study could not conclude that there is a direct relationship between travel time and absences. Further investigation is required to determine the relationship between study time, health, and the average score by health.
+
+This study's methodology and results will be of interest to researchers in the field of education, providing a basis for future studies on external factors that impact academic performance. Overall, the study's findings have significant implications for the education sector, providing insights that can inform future efforts to support student academic success and improve educational outcomes. The study's methodology and results are of interest to educators, policymakers, and other stakeholders in the education sector and can contribute to the development of evidence-based practices.
+
+## Introduction 
+
+As a graduate student who is planning to raise a child, this study may be relevant to you as it explores the external factors that have an impact on students' grades. By analyzing the various external variables that can influence academic performance, this study provides valuable insights that can help parents, educators, and policymakers to better support students' success in school. Specifically, this study looks at factors such as students' health, social and demographic factors, study habits, and other relevant factors that can have an impact on their academic performance.
+
+Understanding the external factors that can affect a student's academic performance can be helpful in creating a supportive home environment and developing effective strategies to help your child succeed in school. This study's findings could also be useful for parents and educators to monitor and provide proper guidelines for external factors that may affect students' academic performance, such as romantic relationships, drinking habits, and how they use their free time. By gaining a deeper understanding of how these factors impact students' grades, parents and educators can work to create a more supportive environment for students and help them develop healthy habits that promote academic success.
+
+In the wider educational industry, the findings of this study can provide insights into how to better support students' academic success and enhance their overall educational experience. Educators and policymakers can use this research to identify areas where they can improve educational outcomes, such as implementing programs to support students' health or providing resources to help students develop effective study habits.
+
+The data used in this study was collected from a survey of secondary school students and includes information on various external variables and their impact on students' grades. The data covers a range of subjects, including math, language, and other core academic areas, providing a comprehensive understanding of the factors that influence student performance across different subjects.
+
+## Key Words
+
+* external factors
+* academic performance
+* Weighted Least Square Regression
+* multiple linear regression
+* health
+* internet access
+* study habits
+* educational outcomes
+
+## Literature Review
+
+* <https://www.researchgate.net/publication/366929441_Application_of_Multiple_Linear_Regression_in_Identifying_Contributing_Factors_in_Students%27_Academic_Achievement>
+
+Title: Application of Multiple Linear Regressionin Identifying Contributing Factors in Students’Academic Achievement
+
+Author: Dg Siti Nurisya Sahirah Binti Ag Isha and Siti Rahayu Binti Mohd Hashim
+
+Mathematics With Economics Programme, Faculty of Science and Natural Resources,Universiti Malaysia Sabah, 88400 Kota Kinabalu, Sabah, Malaysia
+
+This study aimed to identify significant factors that contribute to students' academic success by analyzing internal and external factors. The study involved 327 final-year undergraduate students and found that self-esteem, intelligence, and maternal education were significant factors affecting students' achievement. The government, educators, parents, and university administration should collaborate to establish methods or programs that focus on these three factors to improve students' academic performance. For future research, it is recommended to employ structural equation modelling and consider additional variables such as study habits and time management.
+
+In this research, they made three different models to see which factors were most important for academic achievement. They found that self-esteem, IQ, and maternal education were the most important factors. We also made three different models to find the best combination of factors, but we didn't split them up by internal factors model, the external factors model, and the combined internal and external factors like they did. However, we both agree that the government, parents, educators, and university administration should work together to create programs that focus on these three factors to improve students' academic achievement.
+
+**Data Source**
+
+Downloaded the csv data table from the link below:
+
+* <https://www.kaggle.com/datasets/uciml/student-alcohol-consumption>
+
+**Data collection**
+
+* student-mat.csv
+* student-por.csv
+
+```{r echo=FALSE}
+#set.seed(123)
+
+#mat_df <- data.frame(matrix(ncol = 3, nrow = 0) ,stringsAsFactors = FALSE)
+#por_df <- data.frame(matrix(ncol = 3, nrow = 0) ,stringsAsFactors = FALSE)
+```
+
+**Libraries**
+```{r setup, include=FALSE}
+library(gridExtra)
+library(psych)
+library(corrplot)
+library(onehot)
+library(pheatmap)
+library(RColorBrewer)
+library(rolog)
+library(tidyr)
+library(ggplot2)
+library(MASS)
+library(class)
+library(Matrix)
+library(rpart)
+library(knitr)
+library(ISLR)
+library(GGally)
+library(ggmap)
+library(ggplot2)
+library(gargle)
+library(ggthemes)
+library(gargle)
+library(dplyr)
+library(randomForest)
+library(caTools)
+library(forecast)
+library(quantmod)
+library(data.table)
+library(xts)
+library(zoo)
+library(base)
+library(TTR)
+library(Metrics)
+library(caret)
+```
+
+## Data Exploration
+
+Include: 
+
+* Summary statistics means, medians, quartiles, 
+* Missing value information
+* EDA
+  * The dataframe df_mat contains 395 entries (rows) with 33 columns.
+  * The dataset df_por contains 649 entries (rows) with 33 columns. 
+  * The data types of the columns include integers (int64) and objects (object).
+  * The columns represent various features of the student dataset such as personal and family characteristics, academic performance, and social activities.
+  * Some of the columns include: **school**, **sex**, **age**, **address**, **family size**, **parents' education**, **mother and father's occupation**, **travel time**, **study time**, **number of failures**, **support received from school**, **family**, **extra-curricular**, **activities**, **health**, and **academic grades**.
+
+```{r}
+#df_mat <- read.csv("https://raw.githubusercontent.com/IvanGrozny88/DATA621-Final-Project/main/student-mat.csv")
+#df_por <- read.csv("https://raw.githubusercontent.com/IvanGrozny88/DATA621-Final-Project/main/student-por.csv")
+df_mat <- read.csv("https://raw.githubusercontent.com/seung-m1nsong/602/main/Final/student-mat.csv")
+df_por <- read.csv("https://raw.githubusercontent.com/seung-m1nsong/602/main/Final/student-por.csv")
+```
+
+### Overal Statistics
+
+To gain comprehensive insights, we can merge *df_mat* and *df_por* datasets and analyze their collective statistics. There are 1044 observations (or cases) and 33 variables (or columns) in the df_student dataset.
+
+When examining the distinctive variables in the **df_student**, a few noteworthy ones stand out:
+
+* failures:
+  * The average is shown as 0.26, but considering that the maximum value is 3, it seems that some students have failed in several subjects in the previous semester.
+  * The skew value is 2.78, which is a very large positive value, indicating that the data is skewed to the right.
+
+* travel time:
+  * The average is 1.52, and it seems that most students take a relatively short time to school.
+  * The skewness value is 1.37, which is positive and indicates that the data is skewed to the right.
+
+* absences:
+  * The average is 4.43, indicating that on average students missed about 4 days.
+  * Since the maximum value is 75, which is a very large value, it is possible that some students have many absences.
+  * The skewness value is 3.73, which is a very large positive value, indicating that the data is very skewed to the right.
+
+* Dalc (workday drinking):
+  * The average is 1.49, and most students seem to be drinking relatively little on workdays.
+  * The skewness value is 2.15, which is positive and indicates that the data is skewed to the right.
+
+* Average Drinking: During the week, students average about 2.28 units of drinking.
+  * The standard deviation of the drinking amount is 1.29, showing the degree of scattering of the data. Most students appear to have weekday alcohol consumption spread around the average.
+  * The skewness value has a positive value of 0.62, and the distribution type is skewed to the right. That said, some students are likely to consume relatively more alcohol during the week.
+  
+* health:
+  * The average is 3.54, and the average health status of students seems to be in the middle.
+  * A negative skewness value of -0.50 indicates that the data is slightly skewed to the left.
+
+```{r}
+df_student <- rbind(df_mat, df_por) 
+describe(df_student)
+nrow(df_student)
+ncol(df_student)
+```
+
+### Basic Plots
+```{r echo=FALSE}
+#mat <- as.data.frame(mat)
+mat_new <- df_mat %>% gather(key = 'key', value = 'value')
+mat_new %>% gather() %>% ggplot(aes(x= value)) + geom_histogram(stat = "count", fill = "skyblue") + facet_wrap(~key, scales = 'free', ncol=7)
+```
+```{r}
+#mat <- as.data.frame(mat)
+por_new <- df_por %>% gather(key = 'key', value = 'value')
+por_new %>% gather() %>% ggplot(aes(x= value)) + geom_histogram(stat = "count", fill = "orange") + facet_wrap(~key, scales = 'free', ncol=7)
+```
+
+### Correlation
+
+When considering the distribution of *traveltime*, *studytime*, *failures*,	*famrel*, *freetime*, *goout*, *Dalc*, *Walc*, *health*, and *absences* across different G3 categories, it becomes evident that these variables show a relatively even distribution within each G3 group.
+
+```{r echo=FALSE}
+corrplot(cor(df_mat[,sapply(df_mat, is.numeric)], use = "complete.obs"), type="upper", diag = FALSE, col=brewer.pal(n=10, name="Paired"))
+```
+
+```{r echo=FALSE}
+corrplot(cor(df_por[,sapply(df_por, is.numeric)], use = "complete.obs"), type="upper", diag = FALSE, col=brewer.pal(n=10, name="Paired"))
+```
+
+```{r echo=FALSE}
+p1 <- df_student %>% na.omit() %>% ggplot(aes(factor(G3), traveltime)) + geom_boxplot()
+p2 <- df_student %>% na.omit() %>% ggplot(aes(factor(G3), studytime)) + geom_boxplot()
+p3 <- df_student %>% na.omit() %>% ggplot(aes(factor(G3), failures)) + geom_boxplot()
+p4 <- df_student %>% na.omit() %>% ggplot(aes(factor(G3), famrel)) + geom_boxplot()
+p5 <- df_student %>% na.omit() %>% ggplot(aes(factor(G3), freetime)) + geom_boxplot()
+p6 <- df_student %>% na.omit() %>% ggplot(aes(factor(G3), goout)) + geom_boxplot()
+p7 <- df_student %>% na.omit() %>% ggplot(aes(factor(G3), Dalc)) + geom_boxplot()
+p8 <- df_student %>% na.omit() %>% ggplot(aes(factor(G3), Walc)) + geom_boxplot()
+p9 <- df_student %>% na.omit() %>% ggplot(aes(factor(G3), health)) + geom_boxplot()
+p10<- df_student %>% na.omit() %>% ggplot(aes(factor(G3), absences)) + geom_boxplot()
+
+#p4 <- train_df %>% na.omit() %>% ggplot(aes(pH, FixedAcidity)) + geom_point(alpha=.1) + geom_smooth()
+grid.arrange(p1, p2, p3, p4, p5, p6, p7,p8,p9,p10, ncol=2) 
+```
+
+### Missing values
+
+Both dataset is complete with no missing values.
+```{r echo=FALSE}
+nrow(df_mat[is.na(df_mat),])
+nrow(df_por[is.na(df_por),])
+```
+
+## Data Preparation
+
+### Merging datasets
+
+Include: 
+
+* Merging datasets
+* Renaming columns
+* Adding new columns
+* Replacing binary values
+* Remove rows
+
+Reset the index of **df_stdeunt** dataframe that combine above.
+```{r echo=FALSE}
+# Reset the index
+row.names(df_student) <- NULL
+describe(df_student)
+```
+
+### Renaming columns
+
+change famsup to famEdsup, change Dacl to dayAlc, change Walc to weekAlc, and change goout to friendtime to easier to understand.
+```{r echo=FALSE}
+# Rename columns in df_student
+colnames(df_student)[colnames(df_student) == "famsup"] <- "famEdsup"
+colnames(df_student)[colnames(df_student) == "Walc"] <- "weekAlc"
+colnames(df_student)[colnames(df_student) == "goout"] <- "friendtime"
+```
+
+### Adding new columns
+
+Use the Mutate() method to create a new column named **G1G2avg** and **G1G2avg** for future analysis. 
+
+```{r echo=FALSE}
+# create a new column named 'G1G2avg' with the value 'mat' and 'por'
+df_student <- df_student %>% mutate(G1G2avg = (G1 + G2)/2)
+print(head(df_student))
+
+# create a new column named 'G1G2G3avg' with the value 'mat' and 'por'
+df_student<- df_student%>% mutate(G1G2G3avg = round((G1 + G2 + G3)/3, 1))
+print(head(df_student))
+
+# create a new column named 'class' with the value 'mat' and 'por'
+df_student$class <- 'mat'
+df_student$class <- 'por'
+
+# Print total G1G2G3avg
+total_avg <- mean(df_student$G1G2G3avg)
+print(total_avg)
+```
+
+### Replacing binary values
+
+Changing binary values (yes and no) to 1 and 0 can be beneficial in data analysis because it allows for easier computation and comparison of values. For example, it allows me to perform mathematical operations and comparisons more easily. It also enables the use of machine learning algorithms that require numerical input.
+```{r echo=FALSE}
+df_student[df_student == "yes" | df_student == "no"] <- c(1, 0)
+
+df_student$schoolsup <- as.numeric(df_student$schoolsup)
+df_student$famEdsup <- as.numeric(df_student$famEdsup)
+df_student$paid <- as.numeric(df_student$paid)
+df_student$activities <- as.numeric(df_student$paid)
+df_student$nursery <- as.numeric(df_student$nursery)
+df_student$higher <- as.numeric(df_student$higher)
+df_student$internet <- as.numeric(df_student$internet)
+df_student$romantic <- as.numeric(df_student$romantic)
+
+
+df_student$traveltime <- as.numeric(df_student$traveltime)
+df_student$studytime <- as.numeric(df_student$studytime)
+df_student$failures <- as.numeric(df_student$failures)
+df_student$famrel <- as.numeric(df_student$famrel)
+df_student$freetime <- as.numeric(df_student$freetime)
+df_student$friendtime <- as.numeric(df_student$friendtime)
+df_student$Dalc  <- as.numeric(df_student$Dalc)
+df_student$weekAlc <- as.numeric(df_student$weekAlc)
+df_student$health <- as.numeric(df_student$health)
+df_student$absences  <- as.numeric(df_student$absences)
+df_student$G1 <- as.numeric(df_student$G1)
+df_student$G2 <- as.numeric(df_student$G2)
+df_student$G3 <- as.numeric(df_student$G3)
+
+
+str(df_student)
+
+head(df_student)
+```
+
+### Remove rows
+
+Any record that has a value of 0 for any of the three exams may indicate that the test was not taken or abandoned, and such records will be removed from the dataset to avoid interference with the analysis
+
+```{r echo=FALSE}
+df_student <- df_student[df_student$G1 != 0 & df_student$G2 != 0 & df_student$G3 != 0, ]
+```
+
+## Data Visualization
+
+### Romantic status
+
+In general, students who are in a romantic relationship may have a more challenging time focusing on their studies compared to those who are not. It is crucial to examine whether this is indeed the case.
+
+Although it is not such a big difference, it can be confirmed that male and female students without romactic have better grades.
+
+```{r echo=FALSE}
+# Calculate average of G1G2avg for each combination of romantic status and sex
+avg_romantic_0_female <- mean(df_student[df_student$romantic == 0 & df_student$sex == "F", "G1G2avg"])
+avg_romantic_0_male <- mean(df_student[df_student$romantic == 0 & df_student$sex == "M", "G1G2avg"])
+avg_romantic_1_female <- mean(df_student[df_student$romantic == 1 & df_student$sex == "F", "G1G2avg"])
+avg_romantic_1_male <- mean(df_student[df_student$romantic == 1 & df_student$sex == "M", "G1G2avg"])
+
+# Create a bar plot
+ggplot(data = NULL, aes(x = factor(c("Female = 0", "Male = 0", "Female = 1", "Male = 1")), y = c(avg_romantic_0_female, avg_romantic_0_male, avg_romantic_1_female, avg_romantic_1_male), fill = c("#C44E52", "#C44E52", "#4C72B0", "#4C72B0"))) +
+  geom_bar(stat = "identity", width = 0.6) +
+  xlab("Sex and Romantic Status") + ylab("Average G1G2avg") +
+  ggtitle("Average G1G2avg by Sex and Romantic Status") +
+  guides(fill = FALSE)
+
+```
+
+### Study Time
+
+The findings suggest that students who study for a longer duration have a higher average score compared to those who study for a shorter duration. 
+```{r echo=FALSE}
+# Calculate average of G1G2G3avg per studytime
+study_avg <- aggregate(df_student$G1G2G3avg, by = list(df_student$studytime), FUN = mean)
+
+# Create a bar graph
+barplot(study_avg$x, names.arg = study_avg$Group.1, col = "orange", xlab = "Studytime",
+        ylab = "Average G1G2G3 Score", main = "Average G1G2G3 Score by Study")
+```
+
+### Internet
+
+The accessibility of the internet has become increasingly important in modern education, as it provides students with access to a vast array of learning materials that might otherwise be unavailable. It is widely recognized that the internet has the potential to enhance students' educational experiences, but it is important to assess whether this potential is being fully realized. Therefore, it is necessary to examine whether the same positive results regarding internet accessibility and academic performance were obtained in the experiment.
+
+The following graph indicates that the difference in academic performance between students with and without Internet access is negligible.
+
+```{r echo=FALSE}
+df_student %>%
+  group_by(internet) %>%
+  summarise(G1G2G3avg_mean = mean(G1G2G3avg)) %>%
+  ggplot(aes(x = factor(internet), y = G1G2G3avg_mean, fill = factor(internet))) +
+  geom_bar(stat = "identity", width = 0.5) + 
+  scale_fill_manual(values = c("#69b3a2", "skyblue")) + 
+  labs(title = "Average Grades between Students with Internet and without Internet", 
+       x = "Internet Access", 
+       y = "Average G1G2G3 Scores") + 
+  scale_x_discrete(labels = c("No", "Yes"))
+
+```
+
+## Models
+
+```{r echo=FALSE}
+set.seed(123)
+partition <- sample(1:nrow(df_student), size=nrow(df_student)*0.7,replace=FALSE)
+
+train.data <-df_student[partition, ]
+test.data <- df_student[-partition, ]
+
+target <- test.data$`G3`
+```
+
+### Model 1 
+
+**Multiple Linear Regrssion**
+
+```{r echo=FALSE}
+data_lm_full <- lm(G3 ~ traveltime + studytime + failures + schoolsup + famEdsup + paid + activities +	nursery +	higher + internet +	romantic + famrel +	freetime + friendtime +	Dalc +	weekAlc +	health +	absences, data = df_student)
+
+summary(data_lm_full)
+
+```
+
+```{r echo=FALSE}
+data_step = stepAIC(data_lm_full, scope = list(upper = ~ .^2, lower = ~1))
+
+summary(data_step)
+```
+
+```{r echo=FALSE}
+y_obs <- test.data$G3
+
+yhat_lm <- predict(data_lm_full, newdata=test.data)
+
+yhat_step <- predict(data_step, newdata=test.data)
+
+rmse(y_obs, yhat_lm)
+rmse(y_obs, yhat_step)
+
+
+```
+
+### Model 2
+
+**Random Forest Model**
+
+
+```{r echo=FALSE}
+set.seed(1000)
+
+data_rf <- randomForest(G3 ~ traveltime + studytime + failures + schoolsup + famEdsup + paid + activities +	nursery +	higher + internet +	romantic + famrel +	freetime + friendtime +	Dalc +	weekAlc +	health +	absences, data = df_student)
+
+data_rf
+
+opar <- par(mfrow=c(1,2))
+
+plot(data_rf)
+
+varImpPlot(data_rf)
+
+par(opar)
+
+dev.off() 
+```
+
+```{r echo=FALSE}
+y_obs <- test.data$G3
+yhat_rf <- predict(data_rf, newdata = test.data)
+
+rmse_value <- rmse(y_obs, yhat_rf)
+rmse_value
+```
+
+### Model 3
+
+**decission tree model**
+
+```{r echo=FALSE}
+data_tr <- rpart(G3~ traveltime + studytime + failures + schoolsup + famEdsup + paid + activities +	nursery +	higher + internet +	romantic + famrel +	freetime + friendtime +	Dalc +	weekAlc +	health +	absences, data = df_student)
+
+data_tr
+
+opar <- par(mfrow = c(1,1), xpd = NA)
+
+plot(data_tr)
+
+text(data_tr, use.n = TRUE)
+
+par(opar) 
+
+```
+
+```{r echo=FALSE}
+yhat_tr <- predict(data_tr,  newdata = test.data)
+
+rmse(y_obs, yhat_tr)
+```
+
+## Model Selection
+
+Why is regression model verification necessary? Inaccurate statistical models can be created if the data are irregular or if the relationship between the predictor and response variables is incorrectly established. In other words, a statistical model is created by concluding that there is no relationship between the predictor and the response variable even though there is actually a relationship, or that there is a relationship between the predictor and the response variable despite no relationship, but the actual real applying the model to the world can lead to mispredictions, making unnecessary and serious errors.
+
+```{r}
+boxplot(list(lm = y_obs-yhat_step,
+             rf = y_obs-yhat_rf), ylab="Error in Validation Set")
+
+abline(h=0, lty=2, col='blue')
+```
+
+```{r}
+pairs(data.frame(y_obs=y_obs,
+                 yhat_lm=yhat_step,
+                 yhat_rf=yhat_rf),
+
+      lower.panel=function(x,y){ points(x,y); abline(0, 1, col='red')},
+      upper.panel = panel.cor) 
+
+```
+
+
+
+
+## Conclusion
+
+In retrospect, I believe that the study would have been more robust if the data had been more precise and detailed. Investigating the underlying conditions that motivate students to study harder and how these factors affect their academic performance would have provided a more precise understanding of the relationship between external factors and academic success. While the survey data I used did provide useful insights, a more focused approach that delves into the specific motivators for studying and how these are related to academic outcomes could have yielded more comprehensive and sophisticated results.
+
+Given more time, I would like to collect more extensive binary data and analyze it using binary regression models. This would allow me to examine the relationship between specific factors and academic performance in greater detail and to identify the factors that are most closely associated with academic success. By using more advanced statistical techniques, I could also explore the interplay between different external factors and their combined effects on academic performance. Such an analysis would be useful in designing targeted interventions to support students in their academic pursuits and improve educational outcomes. 
+
+Overall, this study provides a starting point for future research in the field of education and highlights the need for more comprehensive and detailed data to fully understand the complex relationship between external factors and academic success.
+
+
+
+
+
