@@ -88,38 +88,38 @@ Downloaded the csv data table from the link below:
 
 **Libraries**
 ```{r setup, include=FALSE}
-library(gridExtra)
-library(psych)
-library(corrplot)
-library(onehot)
-library(pheatmap)
-library(RColorBrewer)
-library(rolog)
+#library(gridExtra)
+#library(psych)
+#library(corrplot)
+#library(onehot)
+#library(pheatmap)
+#library(RColorBrewer)
+#library(rolog)
 library(tidyr)
 library(ggplot2)
 library(MASS)
-library(class)
-library(Matrix)
-library(rpart)
+#library(class)
+#library(Matrix)
+#library(rpart)
 library(knitr)
-library(ISLR)
-library(GGally)
-library(ggmap)
-library(ggplot2)
-library(gargle)
-library(ggthemes)
-library(gargle)
+#library(ISLR)
+#library(GGally)
+#library(ggmap)
+#library(ggplot2)
+#library(gargle)
+#library(ggthemes)
+#library(gargle)
 library(dplyr)
-library(randomForest)
-library(caTools)
-library(forecast)
-library(quantmod)
-library(data.table)
-library(xts)
-library(zoo)
-library(base)
-library(TTR)
-library(Metrics)
+#library(randomForest)
+#library(caTools)
+#library(forecast)
+#library(quantmod)
+#library(data.table)
+#library(xts)
+#library(zoo)
+#library(base)
+#library(TTR)
+#library(Metrics)
 library(caret)
 ```
 
@@ -143,7 +143,7 @@ df_mat <- read.csv("https://raw.githubusercontent.com/seung-m1nsong/602/main/Fin
 df_por <- read.csv("https://raw.githubusercontent.com/seung-m1nsong/602/main/Final/student-por.csv")
 ```
 
-### Overal Statistics
+### Overall Statistics
 
 To gain comprehensive insights, we can merge *df_mat* and *df_por* datasets and analyze their collective statistics. There are 1044 observations (or cases) and 33 variables (or columns) in the df_student dataset.
 
@@ -177,21 +177,17 @@ When examining the distinctive variables in the **df_student**, a few noteworthy
 ```{r}
 df_student <- rbind(df_mat, df_por) 
 describe(df_student)
-nrow(df_student)
-ncol(df_student)
+#nrow(df_student)
+#ncol(df_student)
 ```
 
 ### Basic Plots
 ```{r echo=FALSE}
 #mat <- as.data.frame(mat)
-mat_new <- df_mat %>% gather(key = 'key', value = 'value')
-mat_new %>% gather() %>% ggplot(aes(x= value)) + geom_histogram(stat = "count", fill = "skyblue") + facet_wrap(~key, scales = 'free', ncol=7)
+df_long <- df_student #%>% gather(key = 'key', value = 'value')
+df_long %>% gather() %>% ggplot(aes(x= value)) + geom_histogram(stat = "count", fill = "skyblue") + facet_wrap(~key, scales = 'free', ncol=7)
 ```
-```{r}
-#mat <- as.data.frame(mat)
-por_new <- df_por %>% gather(key = 'key', value = 'value')
-por_new %>% gather() %>% ggplot(aes(x= value)) + geom_histogram(stat = "count", fill = "orange") + facet_wrap(~key, scales = 'free', ncol=7)
-```
+
 
 ### Correlation
 
