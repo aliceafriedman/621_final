@@ -88,19 +88,19 @@ Downloaded the csv data table from the link below:
 
 **Libraries**
 ```{r setup, include=FALSE}
-#library(gridExtra)
-#library(psych)
-#library(corrplot)
+library(gridExtra)
+library(psych)
+library(corrplot)
 #library(onehot)
 #library(pheatmap)
-#library(RColorBrewer)
+library(RColorBrewer)
 #library(rolog)
 library(tidyr)
 library(ggplot2)
 library(MASS)
 #library(class)
 #library(Matrix)
-#library(rpart)
+library(rpart)
 library(knitr)
 #library(ISLR)
 #library(GGally)
@@ -110,7 +110,7 @@ library(knitr)
 #library(ggthemes)
 #library(gargle)
 library(dplyr)
-#library(randomForest)
+library(randomForest)
 #library(caTools)
 #library(forecast)
 #library(quantmod)
@@ -119,7 +119,7 @@ library(dplyr)
 #library(zoo)
 #library(base)
 #library(TTR)
-#library(Metrics)
+library(Metrics)
 library(caret)
 ```
 
@@ -184,7 +184,7 @@ describe(df_student)
 ### Basic Plots
 ```{r echo=FALSE}
 #mat <- as.data.frame(mat)
-df_long <- df_student #%>% gather(key = 'key', value = 'value')
+df_long <- df_student 
 df_long %>% gather() %>% ggplot(aes(x= value)) + geom_histogram(stat = "count", fill = "skyblue") + facet_wrap(~key, scales = 'free', ncol=7)
 ```
 
@@ -194,11 +194,7 @@ df_long %>% gather() %>% ggplot(aes(x= value)) + geom_histogram(stat = "count", 
 When considering the distribution of *traveltime*, *studytime*, *failures*,	*famrel*, *freetime*, *goout*, *Dalc*, *Walc*, *health*, and *absences* across different G3 categories, it becomes evident that these variables show a relatively even distribution within each G3 group.
 
 ```{r echo=FALSE}
-corrplot(cor(df_mat[,sapply(df_mat, is.numeric)], use = "complete.obs"), type="upper", diag = FALSE, col=brewer.pal(n=10, name="Paired"))
-```
-
-```{r echo=FALSE}
-corrplot(cor(df_por[,sapply(df_por, is.numeric)], use = "complete.obs"), type="upper", diag = FALSE, col=brewer.pal(n=10, name="Paired"))
+corrplot(cor(df_student[,sapply(df_student, is.numeric)], use = "complete.obs"), type="upper", diag = FALSE, col=brewer.pal(n=10, name="Paired"))
 ```
 
 ```{r echo=FALSE}
@@ -219,7 +215,7 @@ grid.arrange(p1, p2, p3, p4, p5, p6, p7,p8,p9,p10, ncol=2)
 
 ### Missing values
 
-Both dataset is complete with no missing values.
+The dataset is complete with no missing values.
 ```{r echo=FALSE}
 nrow(df_mat[is.na(df_mat),])
 nrow(df_por[is.na(df_por),])
@@ -229,7 +225,7 @@ nrow(df_por[is.na(df_por),])
 
 ### Merging datasets
 
-Include: 
+Includes: 
 
 * Merging datasets
 * Renaming columns
@@ -237,7 +233,7 @@ Include:
 * Replacing binary values
 * Remove rows
 
-Reset the index of **df_stdeunt** dataframe that combine above.
+Reset the index of **df_student** dataframe that combine above.
 ```{r echo=FALSE}
 # Reset the index
 row.names(df_student) <- NULL
@@ -485,7 +481,8 @@ boxplot(list(lm = y_obs-yhat_step,
 abline(h=0, lty=2, col='blue')
 ```
 
-```{r}
+```{r, eval = FALSE}
+#Coudln't get this to compile
 pairs(data.frame(y_obs=y_obs,
                  yhat_lm=yhat_step,
                  yhat_rf=yhat_rf),
