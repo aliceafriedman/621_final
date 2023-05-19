@@ -21,15 +21,15 @@ linkcolor: blue
 
 This study investigates the external factors affecting students' academic performance in secondary schools' math and Portuguese language courses. Using a quantitative dataset obtained through a survey, the study analyzes various external variables, such as students' health, social and demographic factors, study habits, and other relevant factors to understand their impact on academic performance.
 
-The study uses Multiple Linear Regression and Weighted Least Square Regression to examine the relationship between a dependent variable and multiple independent variables. Moreover, I used multiple graph to finds that although there is not a significant difference, male and female students without romantic involvement have better grades and students with internet access had a higher average grade than those without. Additionally, it was observed that the overall average grade decreases as travel time increases and frequency of drinking increases, the average score decreases accordingly. The study could not conclude that there is a direct relationship between travel time and absences. Further investigation is required to determine the relationship between study time, health, and the average score by health.
+The study uses Multiple Linear Regression and Weighted Least Square Regression to examine the relationship between a dependent variable (final grade) and multiple independent variables. We use multiple graph to finds that although there is not a significant difference, male and female students without romantic involvement have better grades and students with internet access had a higher average grade than those without. Additionally, it was observed that the overall average grade decreases as travel time increases and frequency of drinking increases, the average score decreases accordingly. The study could not conclude that there is a direct relationship between travel time and absences. Further investigation is required to determine the relationship between study time, health, and the average score by health.
 
 This study's methodology and results will be of interest to researchers in the field of education, providing a basis for future studies on external factors that impact academic performance. Overall, the study's findings have significant implications for the education sector, providing insights that can inform future efforts to support student academic success and improve educational outcomes. The study's methodology and results are of interest to educators, policymakers, and other stakeholders in the education sector and can contribute to the development of evidence-based practices.
 
 ## Introduction 
 
-As a graduate student who is planning to raise a child, this study may be relevant to you as it explores the external factors that have an impact on students' grades. By analyzing the various external variables that can influence academic performance, this study provides valuable insights that can help parents, educators, and policymakers to better support students' success in school. Specifically, this study looks at factors such as students' health, social and demographic factors, study habits, and other relevant factors that can have an impact on their academic performance.
+This study may be relevant to you as it explores the external factors that have an impact on students' grades. By analyzing the various external variables that can influence academic performance, this study provides valuable insights that can help parents, educators, and policymakers to better support students' success in school. Specifically, this study looks at factors such as students' health, social and demographic factors, study habits, and other relevant factors that can have an impact on their academic performance.
 
-Understanding the external factors that can affect a student's academic performance can be helpful in creating a supportive home environment and developing effective strategies to help your child succeed in school. This study's findings could also be useful for parents and educators to monitor and provide proper guidelines for external factors that may affect students' academic performance, such as romantic relationships, drinking habits, and how they use their free time. By gaining a deeper understanding of how these factors impact students' grades, parents and educators can work to create a more supportive environment for students and help them develop healthy habits that promote academic success.
+Understanding the external factors that can affect a student's academic performance can be helpful in creating a supportive home environment and developing effective strategies to help a child succeed in school. This study's findings could also be useful for parents and educators to monitor and provide proper guidelines for external factors that may affect students' academic performance, such as romantic relationships, drinking habits, and how they use their free time. By gaining a deeper understanding of how these factors impact students' grades, parents and educators can work to create a more supportive environment for students and help them develop healthy habits that promote academic success.
 
 In the wider educational industry, the findings of this study can provide insights into how to better support students' academic success and enhance their overall educational experience. Educators and policymakers can use this research to identify areas where they can improve educational outcomes, such as implementing programs to support students' health or providing resources to help students develop effective study habits.
 
@@ -52,13 +52,21 @@ The data used in this study was collected from a survey of secondary school stud
 
 Title: Application of Multiple Linear Regressionin Identifying Contributing Factors in Students’Academic Achievement
 
-Author: Dg Siti Nurisya Sahirah Binti Ag Isha and Siti Rahayu Binti Mohd Hashim
+Authors: Dg Siti Nurisya Sahirah Binti Ag Isha and Siti Rahayu Binti Mohd Hashim
 
 Mathematics With Economics Programme, Faculty of Science and Natural Resources,Universiti Malaysia Sabah, 88400 Kota Kinabalu, Sabah, Malaysia
 
 This study aimed to identify significant factors that contribute to students' academic success by analyzing internal and external factors. The study involved 327 final-year undergraduate students and found that self-esteem, intelligence, and maternal education were significant factors affecting students' achievement. The government, educators, parents, and university administration should collaborate to establish methods or programs that focus on these three factors to improve students' academic performance. For future research, it is recommended to employ structural equation modelling and consider additional variables such as study habits and time management.
 
 In this research, they made three different models to see which factors were most important for academic achievement. They found that self-esteem, IQ, and maternal education were the most important factors. We also made three different models to find the best combination of factors, but we didn't split them up by internal factors model, the external factors model, and the combined internal and external factors like they did. However, we both agree that the government, parents, educators, and university administration should work together to create programs that focus on these three factors to improve students' academic achievement.
+
+<https://files.eric.ed.gov/fulltext/EJ1149330.pdf>
+
+Title: A STUDY ON ACADEMIC ACHIEVEMENT AND PERSONALITY OF SECONDARY SCHOOL STUDENTS 
+
+Authors: Dr. Suvarna V. D.and Dr H. S. Ganesha Bhata1
+
+This study uses ANOVA and the Pearson's product-moment coefficient to test hypotheses related to differences in academic achievement between different groups of students (including both demographics and responses to a personality test ) using a dataset of approximately 300 secondary school students.The results find that the students' age and gender affect their achievement levels, but that other demographic categories and (interestingly) personality characteristics do not.
 
 **Data Source**
 
