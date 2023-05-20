@@ -1,6 +1,6 @@
 ---
 title: "DATA621 Final Project"
-author: IvanTikhonov, Seung Min Song, Alice Firedman
+author: Ivan Tikhonov, Seung Min Song, Alice Firedman
 output:  
   html_document:
     toc: true
@@ -17,9 +17,45 @@ toc_float: true
 linkcolor: blue
 ---
 
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, cache=TRUE)
+library(gridExtra)
+library(psych)
+library(corrplot)
+#library(onehot)
+#library(pheatmap)
+library(RColorBrewer)
+#library(rolog)
+library(tidyr)
+library(ggplot2)
+library(MASS)
+#library(class)
+#library(Matrix)
+library(rpart)
+library(knitr)
+#library(ISLR)
+#library(GGally)
+#library(ggmap)
+library(ggplot2)
+#library(gargle)
+#library(ggthemes)
+#library(gargle)
+library(dplyr)
+library(randomForest)
+#library(caTools)
+#library(forecast)
+#library(quantmod)
+#library(data.table)
+#library(xts)
+#library(zoo)
+#library(base)
+#library(TTR)
+library(Metrics)
+library(caret)
+```
 ## Abstract 
 
-This study investigates the external factors affecting students' academic performance in secondary schools' math and Portuguese language courses. Using a quantitative dataset obtained through a survey, the study analyzes various external variables, such as students' health, social and demographic factors, study habits, and other relevant factors to understand their impact on academic performance.
+This study investigates the external factors affecting students' academic performance in secondary schools' math and Portuguese language courses. Using a quantitative data set obtained through a survey, the study analyzes various external variables, such as students' health, social and demographic factors, study habits, and other relevant factors to understand their impact on academic performance.
 
 The study uses Multiple Linear Regression and Weighted Least Square Regression to examine the relationship between a dependent variable (final grade) and multiple independent variables. We use multiple graph to finds that although there is not a significant difference, male and female students without romantic involvement have better grades and students with internet access had a higher average grade than those without. Additionally, it was observed that the overall average grade decreases as travel time increases and frequency of drinking increases, the average score decreases accordingly. The study could not conclude that there is a direct relationship between travel time and absences. Further investigation is required to determine the relationship between study time, health, and the average score by health.
 
@@ -49,9 +85,9 @@ The data used in this study was collected from a survey of secondary school stud
 
 ## Literature Review
 
-Academic success is a widely studied phenomenon. Previous studies have used Pearson’s partial correlations, moderated linear regression, or analysis of variance between groups (ANOVA) to determine the relationship between factors such as demographics (e.g. sex), lisfetsyle habist (e.g. screen time), and physical and cognitive abilities (e.g. cardiovascular fitnesss measured by VO2 Max) to predict academic achievement. All of the studies presented below attempt to understand factors associated with a *student* rather than a school or teacher that my predict academic success, and so (as is the case with our dataset) look at cross-section of students at a single school, so that the school itself is not considered a factor.
+Academic success is a widely studied phenomenon. Previous studies have used Pearson’s partial correlations, moderated linear regression, or analysis of variance between groups (ANOVA) to determine the relationship between factors such as demographics (e.g. sex), lifestyle habits (e.g. screen time), and physical and cognitive abilities (e.g. cardiovascular fitness measured by VO2 Max) to predict academic achievement. All of the studies presented below attempt to understand factors associated with a *student* rather than a school or teacher that my predict academic success, and so (as is the case with our data set) look at cross-section of students at a single school, so that the school itself is not considered a factor. This is different from our data set which includes two high schools. 
 
-A large number of factors  have been identified in previous studies to predict academic achievement including sex, screen time, sleep, cell-phone use, maternal education, IQ; however, the effect typically found is low (explaining between approximately 6% and 50% of variation). This indicates that other factors not included in the study (which may include student-specifc habits like study habits or school-related factors like school quality) may impact variation, and that the true model is likely complex.
+A large number of factors  have been identified in previous studies to predict academic achievement including sex, screen time, sleep, cell-phone use, maternal education, IQ; however, the effect typically found is low (explaining between approximately 6% and 50% of variation). This indicates that other factors not included in the study (which may include student-specific habits like study habits or school-related factors like school quality) may impact variation, and that the true model is likely complex.
 
 
 ### [Title: Application of Multiple Linear Regression Identifying Contributing Factors in Students’Academic Achievement]((https://www.researchgate.net/publication/366929441_Application_of_Multiple_Linear_Regression_in_Identifying_Contributing_Factors_in_Students%27_Academic_Achievement)
@@ -68,74 +104,26 @@ In this research, they made three different models to see which factors were mos
 Authors: Dr. Suvarna V. D.and Dr H. S. Ganesha Bhata1
 Research in Pedagogy, v6 n1 p99-108, 2016
 
-This study uses ANOVA and the Pearson's product-moment coefficient to test hypotheses related to differences in academic achievement between different groups of students (including both demographics and responses to a personality test ) using a dataset of approximately 300 secondary school students.The results find that the students' age and gender affect their achievement levels, but that other demographic categories and (interestingly) personality characteristics do not.
+This study uses ANOVA and the Pearson's product-moment coefficient to test hypotheses related to differences in academic achievement between different groups of students (including both demographics and responses to a personality test ) using a data set of approximately 300 secondary school students.The results find that the students' age and gender affect their achievement levels, but that other demographic categories and (interestingly) personality characteristics do not.
 
 ### [Predictors of Academic Performance in High School Students: The Longitudinal ASAP Study](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC9365103/#:~:text=Finally%2C%20psychological%20factors%20such%20as,42%2C%2043%2C%2048).)
 Authors: Marie-Maude Dubuc, Mylene Aubertin-Leheudr, and Antony D. Karelis
 Published online 2022 May 1, International Journal of Exercise
 
-This study used moderated multivariate linear regression, separately comparing male and female students, to evaluate the impact of social, physical, and cogntive factors to explain variation in academic achievement among a cohort of 185 high-school students evaluated at a single high school over three years. The researchers controlled for demographic factors such as race, income, and ethnicity and use both a cross-sectional and longitudinal approach. In their results, they found that sex, cardiovascular fitness (measured by VO2 Max), and workign memory were important predictors; however, they found that results differed when controlling for sex, school subject, and study design indicating that academic performance is in fact a highly complex phenomenon.
+This study used moderated multivariate linear regression, separately comparing male and female students, to evaluate the impact of social, physical, and cognitive factors to explain variation in academic achievement among a cohort of 185 high-school students evaluated at a single high school over three years. The researchers controlled for demographic factors such as race, income, and ethnicity and use both a cross-sectional and longitudinal approach. In their results, they found that sex, cardiovascular fitness (measured by VO2 Max), and working memory were important predictors; however, they found that results differed when controlling for sex, school subject, and study design indicating that academic performance is in fact a highly complex phenomenon.
 
 ## Data Source
 
-The data source is from a [Kaggle competition](https://www.kaggle.com/datasets/uciml/student-alcohol-consumption) and represents observations from 394 students at a single high school. The data is initially split into two datasets based on which subject is being observed (Portuguese language or math). There are 382 students represented in both data sets, which can be indentified by identical values in the features. 
+The data source is from a [Kaggle competition](https://www.kaggle.com/datasets/uciml/student-alcohol-consumption) and represents observations from 662 students at two high schools. The data is initially split into two data sets based on which subject is being observed (Portuguese language or math). There are 382 students represented in both data sets, which can be identified by identical values in the features. 
 
-We will use the data set to predict academic achievement represented by the grades, G. A data dictionary is included in the Appendix.
-
-
+We will use the data set to predict academic achievement represented by the final grades, `G3`. A data dictionary is included in Appendix 1.
 
 
+## Data Preparation
+The first task is to merge the data sets, identifying which students are identical and which grades correspond to which class.
 
+```{r merge}
 
-* <https://www.kaggle.com/datasets/uciml/student-alcohol-consumption>
-
-**Data collection**
-
-* student-mat.csv
-* student-por.csv
-
-```{r echo=FALSE}
-#set.seed(123)
-
-#mat_df <- data.frame(matrix(ncol = 3, nrow = 0) ,stringsAsFactors = FALSE)
-#por_df <- data.frame(matrix(ncol = 3, nrow = 0) ,stringsAsFactors = FALSE)
-```
-
-**Libraries**
-```{r setup, include=FALSE}
-library(gridExtra)
-library(psych)
-library(corrplot)
-#library(onehot)
-#library(pheatmap)
-library(RColorBrewer)
-#library(rolog)
-library(tidyr)
-library(ggplot2)
-library(MASS)
-#library(class)
-#library(Matrix)
-library(rpart)
-library(knitr)
-#library(ISLR)
-#library(GGally)
-#library(ggmap)
-#library(ggplot2)
-#library(gargle)
-#library(ggthemes)
-#library(gargle)
-library(dplyr)
-library(randomForest)
-#library(caTools)
-#library(forecast)
-#library(quantmod)
-#library(data.table)
-#library(xts)
-#library(zoo)
-#library(base)
-#library(TTR)
-library(Metrics)
-library(caret)
 ```
 
 ## Data Exploration
@@ -146,21 +134,19 @@ Include:
 * Missing value information
 * EDA
   * The dataframe df_mat contains 395 entries (rows) with 33 columns.
-  * The dataset df_por contains 649 entries (rows) with 33 columns. 
+  * The data set df_por contains 649 entries (rows) with 33 columns. 
   * The data types of the columns include integers (int64) and objects (object).
-  * The columns represent various features of the student dataset such as personal and family characteristics, academic performance, and social activities.
+  * The columns represent various features of the student data set such as personal and family characteristics, academic performance, and social activities.
   * Some of the columns include: **school**, **sex**, **age**, **address**, **family size**, **parents' education**, **mother and father's occupation**, **travel time**, **study time**, **number of failures**, **support received from school**, **family**, **extra-curricular**, **activities**, **health**, and **academic grades**.
 
 ```{r}
-#df_mat <- read.csv("https://raw.githubusercontent.com/IvanGrozny88/DATA621-Final-Project/main/student-mat.csv")
-#df_por <- read.csv("https://raw.githubusercontent.com/IvanGrozny88/DATA621-Final-Project/main/student-por.csv")
 df_mat <- read.csv("https://raw.githubusercontent.com/seung-m1nsong/602/main/Final/student-mat.csv")
 df_por <- read.csv("https://raw.githubusercontent.com/seung-m1nsong/602/main/Final/student-por.csv")
 ```
 
 ### Overall Statistics
 
-To gain comprehensive insights, we can merge *df_mat* and *df_por* datasets and analyze their collective statistics. There are 1044 observations (or cases) and 33 variables (or columns) in the df_student dataset.
+To gain comprehensive insights, we can merge *df_mat* and *df_por* data sets and analyze their collective statistics. There are 1044 observations (or cases) and 33 variables (or columns) in the df_student data set.
 
 When examining the distinctive variables in the **df_student**, a few noteworthy ones stand out:
 
@@ -230,7 +216,7 @@ grid.arrange(p1, p2, p3, p4, p5, p6, p7,p8,p9,p10, ncol=2)
 
 ### Missing values
 
-The dataset is complete with no missing values.
+The data set is complete with no missing values.
 ```{r echo=FALSE}
 nrow(df_mat[is.na(df_mat),])
 nrow(df_por[is.na(df_por),])
@@ -242,7 +228,7 @@ nrow(df_por[is.na(df_por),])
 
 Includes: 
 
-* Merging datasets
+* Merging data sets
 * Renaming columns
 * Adding new columns
 * Replacing binary values
@@ -325,7 +311,7 @@ head(df_student)
 
 ### Remove rows
 
-Any record that has a value of 0 for any of the three exams may indicate that the test was not taken or abandoned, and such records will be removed from the dataset to avoid interference with the analysis
+Any record that has a value of 0 for any of the three exams may indicate that the test was not taken or abandoned, and such records will be removed from the data set to avoid interference with the analysis
 
 ```{r echo=FALSE}
 df_student <- df_student[df_student$G1 != 0 & df_student$G2 != 0 & df_student$G3 != 0, ]
@@ -462,7 +448,7 @@ rmse_value
 
 ### Model 3
 
-**decission tree model**
+**decision tree model**
 
 ```{r echo=FALSE}
 data_tr <- rpart(G3~ traveltime + studytime + failures + schoolsup + famEdsup + paid + activities +	nursery +	higher + internet +	romantic + famrel +	freetime + friendtime +	Dalc +	weekAlc +	health +	absences, data = df_student)
@@ -487,7 +473,7 @@ rmse(y_obs, yhat_tr)
 
 ## Model Selection
 
-Why is regression model verification necessary? Inaccurate statistical models can be created if the data are irregular or if the relationship between the predictor and response variables is incorrectly established. In other words, a statistical model is created by concluding that there is no relationship between the predictor and the response variable even though there is actually a relationship, or that there is a relationship between the predictor and the response variable despite no relationship, but the actual real applying the model to the world can lead to mispredictions, making unnecessary and serious errors.
+Why is regression model verification necessary? Inaccurate statistical models can be created if the data are irregular or if the relationship between the predictor and response variables is incorrectly established. In other words, a statistical model is created by concluding that there is no relationship between the predictor and the response variable even though there is actually a relationship, or that there is a relationship between the predictor and the response variable despite no relationship, but the actual real applying the model to the world can lead to incorrect predictions, making unnecessary and serious errors.
 
 ```{r}
 boxplot(list(lm = y_obs-yhat_step,
@@ -497,7 +483,7 @@ abline(h=0, lty=2, col='blue')
 ```
 
 ```{r, eval = FALSE}
-#Coudln't get this to compile
+#Couldn't get this to compile
 pairs(data.frame(y_obs=y_obs,
                  yhat_lm=yhat_step,
                  yhat_rf=yhat_rf),
@@ -521,43 +507,43 @@ Overall, this study provides a starting point for future research in the field o
 ## References
 
 
-Data source: P. Cortez and A. Silva. Using Data Mining to Predict Secondary School Student Performance. In A. Brito and J. Teixeira Eds., Proceedings of 5th FUture BUsiness TEChnology Conference (FUBUTEC 2008) pp. 5-12, Porto, Portugal, April, 2008, EUROSIS, ISBN 978-9077381-39-7. Accessed via [Kaggle](https://www.kaggle.com/datasets/uciml/student-alcohol-consumption)
+Data source: P. Cortez and A. Silva. Using Data Mining to Predict Secondary School Student Performance. In A. Brito and J. Teixeira Eds., Proceedings of 5th Future Business Technology Conference (FUBUTEC 2008) pp. 5-12, Porto, Portugal, April, 2008, EUROSIS, ISBN 978-9077381-39-7. Accessed via [Kaggle](https://www.kaggle.com/datasets/uciml/student-alcohol-consumption)
 
 
 
 ## Appendix 1: Data Dictionary
 (from [Kaggle](https://www.kaggle.com/datasets/uciml/student-alcohol-consumption))
 
-*school* - student's school (binary: 'GP' - Gabriel Pereira or 'MS' - Mousinho da Silveira)
-*sex* - student's sex (binary: 'F' - female or 'M' - male)
-*age* - student's age (numeric: from 15 to 22)
-*address* - student's home address type (binary: 'U' - urban or 'R' - rural)
-*famsize* - family size (binary: 'LE3' - less or equal to 3 or 'GT3' - greater than 3)
-*Pstatus* - parent's cohabitation status (binary: 'T' - living together or 'A' - apart)
-*Medu* - mother's education (numeric: 0 - none, 1 - primary education (4th grade), 2 – 5th to 9th grade, 3 – secondary education or 4 – *higher* education)
-*Fedu* - father's education (numeric: 0 - none, 1 - primary education (4th grade), 2 – 5th to 9th grade, 3 – secondary education or 4 – higher education)
-*Mjob* - mother's job (nominal: 'teacher', 'health' care related, civil 'services' (e.g. administrative or police), 'at_home' or 'other')
-*Fjob* - father's job (nominal: 'teacher', 'health' care related, civil 'services' (e.g. administrative or police), 'at_home' or 'other')
-*reason* - reason to choose this school (nominal: close to 'home', school 'reputation', 'course' preference or 'other')
-*guardian* - student's guardian (nominal: 'mother', 'father' or 'other')
-*traveltime* - home to school travel time (numeric: 1 - <15 min., 2 - 15 to 30 min., 3 - 30 min. to 1 hour, or 4 - >1 hour)
-*studytime* - weekly study time (numeric: 1 - <2 hours, 2 - 2 to 5 hours, 3 - 5 to 10 hours, or 4 - >10 hours)
-*failures* - number of past class failures (numeric: n if 1<=n<3, else 4)
-*schoolsup* - extra educational support (binary: yes or no)
-*famsup* - family educational support (binary: yes or no)
-*paid* - extra paid classes within the course subject (Math or Portuguese) (binary: yes or no)
-*activities* - extra-curricular activities (binary: yes or no)
-*nursery* - attended nursery school (binary: yes or no)
-*higher* - wants to take higher education (binary: yes or no)
-*internet* - Internet access at home (binary: yes or no)
-*romantic* - with a romantic relationship (binary: yes or no)
-*famrel* - quality of family relationships (numeric: from 1 - very bad to 5 - excellent)
-*freetime* - free time after school (numeric: from 1 - very low to 5 - very high)
-*goout* - going out with friends (numeric: from 1 - very low to 5 - very high)
-*Dalc* - workday alcohol consumption (numeric: from 1 - very low to 5 - very high)
-*Walc* - weekend alcohol consumption (numeric: from 1 - very low to 5 - very high)
-*health* - current health status (numeric: from 1 - very bad to 5 - very good)
-*absences* - number of school absences (numeric: from 0 to 93)
+* *school* - student's school (binary: 'GP' - Gabriel Pereira or 'MS' - Mousinho da Silveira)
+* *sex* - student's sex (binary: 'F' - female or 'M' - male)
+* *age* - student's age (numeric: from 15 to 22)
+* *address* - student's home address type (binary: 'U' - urban or 'R' - rural)
+* *famsize* - family size (binary: 'LE3' - less or equal to 3 or 'GT3' - greater than 3)
+* *Pstatus* - parent's cohabitation status (binary: 'T' - living together or 'A' - apart)
+* * *Medu* - mother's education (numeric: 0 - none, 1 - primary education (4th grade), 2 – 5th to 9th grade, 3 – secondary education or 4 – * *higher* education)
+* *Fedu* - father's education (numeric: 0 - none, 1 - primary education (4th grade), 2 – 5th to 9th grade, 3 – secondary education or 4 – higher education)
+* *Mjob* - mother's job (nominal: 'teacher', 'health' care related, civil 'services' (e.g. administrative or police), 'at_home' or 'other')
+* *Fjob* - father's job (nominal: 'teacher', 'health' care related, civil 'services' (e.g. administrative or police), 'at_home' or 'other')
+* *reason* - reason to choose this school (nominal: close to 'home', school 'reputation', 'course' preference or 'other')
+* *guardian* - student's guardian (nominal: 'mother', 'father' or 'other')
+* *traveltime* - home to school travel time (numeric: 1 - <15 min., 2 - 15 to 30 min., 3 - 30 min. to 1 hour, or 4 - >1 hour)
+* *studytime* - weekly study time (numeric: 1 - <2 hours, 2 - 2 to 5 hours, 3 - 5 to 10 hours, or 4 - >10 hours)
+* *failures* - number of past class failures (numeric: n if 1<=n<3, else 4)
+* *schoolsup* - extra educational support (binary: yes or no)
+* *famsup* - family educational support (binary: yes or no)
+* *paid* - extra paid classes within the course subject (Math or Portuguese) (binary: yes or no)
+* *activities* - extra-curricular activities (binary: yes or no)
+* *nursery* - attended nursery school (binary: yes or no)
+* *higher* - wants to take higher education (binary: yes or no)
+* *internet* - Internet access at home (binary: yes or no)
+* *romantic* - with a romantic relationship (binary: yes or no)
+* *famrel* - quality of family relationships (numeric: from 1 - very bad to 5 - excellent)
+* *freetime* - free time after school (numeric: from 1 - very low to 5 - very high)
+* *goout* - going out with friends (numeric: from 1 - very low to 5 - very high)
+* *Dalc* - workday alcohol consumption (numeric: from 1 - very low to 5 - very high)
+* *Walc* - weekend alcohol consumption (numeric: from 1 - very low to 5 - very high)
+* *health* - current health status (numeric: from 1 - very bad to 5 - very good)
+* *absences* - number of school absences (numeric: from 0 to 93)
 
 These grades are related with the course subject, Math or Portuguese:
 
