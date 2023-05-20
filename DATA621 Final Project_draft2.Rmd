@@ -38,6 +38,7 @@ The data used in this study was collected from a survey of secondary school stud
 ## Key Words
 
 * external factors
+* internal factors 
 * academic performance
 * Weighted Least Square Regression
 * multiple linear regression
@@ -48,25 +49,32 @@ The data used in this study was collected from a survey of secondary school stud
 
 ## Literature Review
 
-* <https://www.researchgate.net/publication/366929441_Application_of_Multiple_Linear_Regression_in_Identifying_Contributing_Factors_in_Students%27_Academic_Achievement>
+Academic success is a widely studied phenomenon. Previous studies have used Pearson’s partial correlations, moderated linear regression, or analysis of variance between groups (ANOVA) to determine the relationship between factors such as demographics (e.g. sex), lisfetsyle habist (e.g. screen time), and physical and cognitive abilities (e.g. cardiovascular fitnesss measured by VO2 Max) to predict academic achievement. All of the studies presented below attempt to understand factors associated with a *student* rather than a school or teacher that my predict academic success, and so (as is the case with our dataset) look at cross-section of students at a single school, so that the school itself is not considered a factor.
 
-Title: Application of Multiple Linear Regressionin Identifying Contributing Factors in Students’Academic Achievement
+A large number of factors  have been identified in previous studies to predict academic achievement including sex, screen time, sleep, cell-phone use, maternal education, IQ; however, the effect typically found is low (explaining between approximately 6% and 50% of variation). This indicates that other factors not included in the study (which may include student-specifc habits like study habits or school-related factors like school quality) may impact variation, and that the true model is likely complex.
 
+
+### [Title: Application of Multiple Linear Regression Identifying Contributing Factors in Students’Academic Achievement]((https://www.researchgate.net/publication/366929441_Application_of_Multiple_Linear_Regression_in_Identifying_Contributing_Factors_in_Students%27_Academic_Achievement)
 Authors: Dg Siti Nurisya Sahirah Binti Ag Isha and Siti Rahayu Binti Mohd Hashim
+Proceedings of the International Conference on Mathematical Sciences and Statistics 2022 (ICMSS 2022)At: Selangor, Malaysia
+Mathematics With Economics Programme, Faculty of Science and Natural Resources, December 2022
 
-Mathematics With Economics Programme, Faculty of Science and Natural Resources,Universiti Malaysia Sabah, 88400 Kota Kinabalu, Sabah, Malaysia
+This study aimed to identify significant factors that contribute to students' academic success by analyzing internal and external factors. The study involved 327 final-year undergraduate students and found that self-esteem, intelligence, and maternal education were significant factors affecting students' achievement. 
 
-This study aimed to identify significant factors that contribute to students' academic success by analyzing internal and external factors. The study involved 327 final-year undergraduate students and found that self-esteem, intelligence, and maternal education were significant factors affecting students' achievement. The government, educators, parents, and university administration should collaborate to establish methods or programs that focus on these three factors to improve students' academic performance. For future research, it is recommended to employ structural equation modelling and consider additional variables such as study habits and time management.
+In this research, they made three different models to see which factors were most important for academic achievement. They found that self-esteem, IQ, and maternal education were the most important factors. 
 
-In this research, they made three different models to see which factors were most important for academic achievement. They found that self-esteem, IQ, and maternal education were the most important factors. We also made three different models to find the best combination of factors, but we didn't split them up by internal factors model, the external factors model, and the combined internal and external factors like they did. However, we both agree that the government, parents, educators, and university administration should work together to create programs that focus on these three factors to improve students' academic achievement.
 
-<https://files.eric.ed.gov/fulltext/EJ1149330.pdf>
-
-Title: A STUDY ON ACADEMIC ACHIEVEMENT AND PERSONALITY OF SECONDARY SCHOOL STUDENTS 
-
+### [Title: A Study on Academic Achievement and Personality of Secondary School Students](https://files.eric.ed.gov/fulltext/EJ1149330.pdf)
 Authors: Dr. Suvarna V. D.and Dr H. S. Ganesha Bhata1
+Research in Pedagogy, v6 n1 p99-108, 2016
 
 This study uses ANOVA and the Pearson's product-moment coefficient to test hypotheses related to differences in academic achievement between different groups of students (including both demographics and responses to a personality test ) using a dataset of approximately 300 secondary school students.The results find that the students' age and gender affect their achievement levels, but that other demographic categories and (interestingly) personality characteristics do not.
+
+### [Predictors of Academic Performance in High School Students: The Longitudinal ASAP Study](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC9365103/#:~:text=Finally%2C%20psychological%20factors%20such%20as,42%2C%2043%2C%2048).)
+Authors: Marie-Maude Dubuc, Mylene Aubertin-Leheudr, and Antony D. Karelis
+Published online 2022 May 1, International Journal of Exercise
+
+This study used moderated multivariate linear regression, separately comparing male and female students, to evaluate the impact of social, physical, and cogntive factors to explain variation in academic achievement among a cohort of 185 high-school students evaluated at a single high school over three years. The researchers controlled for demographic factors such as race, income, and ethnicity and use both a cross-sectional and longitudinal approach. In their results, they found that sex, cardiovascular fitness (measured by VO2 Max), and workign memory were important predictors; however, they found that results differed when controlling for sex, school subject, and study design indicating that academic performance is in fact a highly complex phenomenon.
 
 **Data Source**
 
