@@ -1,6 +1,6 @@
 ---
 title: "DATA621 Final Project"
-author: Ivan Tikhonov, Seung Min Song, Alice Firedman
+author: Ivan Tikhonov, Seung Min Song, Alice Frieddman
 output:  
   html_document:
     toc: true
@@ -114,201 +114,227 @@ This study used moderated multivariate linear regression, separately comparing m
 
 ## Data Source
 
-The data source is from a [Kaggle competition](https://www.kaggle.com/datasets/uciml/student-alcohol-consumption) and represents observations from 662 students at two high schools. The data is initially split into two data sets based on which subject is being observed (Portuguese language or math). There are 382 students represented in both data sets, which can be identified by identical values in the features. 
+The data source is from a [Kaggle competition](https://www.kaggle.com/datasets/uciml/student-alcohol-consumption) and represents observations from 662 students at two high schools. The data is initially split into two data sets based on which subject is being observed (Portuguese language or math). 
 
 We will use the data set to predict academic achievement represented by the final grades, `G3`. A data dictionary is included in Appendix 1.
 
 
-## Data Preparation
-The first task is to merge the data sets, identifying which students are identical and which grades correspond to which class.
+
+
+## Data Exploration
+### Data Preparation
+The first task is to merge the data sets, identifying which students are identical and which grades correspond to which class. We can consider the data in three ways:
+1. Predicting achievement in math, with df_mat
+2. Predicting achievement in language, with df_por
+3. Predicting achievement in school independent of subject, with df_both, using a target `final_grade`, which is the average of both classes. Because students have answered with different number of absences in the different classes, we have also averahed the absences in this dataset. There are 370 records with identical features in both datasets outside of the grades and absences, which are presumed to be specific to the subject. The field `paid` refers to subject-specific paid tutoring.
+
 
 ```{r merge}
 
+df_mat <- read.csv("https://raw.githubusercontent.com/seung-m1nsong/602/main/Final/student-mat.csv") 
+
+df_por <- read.csv("https://raw.githubusercontent.com/seung-m1nsong/602/main/Final/student-por.csv")
+
+df_both <- dplyr::inner_join(
+  df_mat %>% 
+    rename(
+      G1_mat = G1,
+      G2_mat = G2,
+      G3_mat = G3, 
+      absence_mat = absences,
+      failures_mat = failures,
+      paid_mat = paid
+    ), 
+  df_por%>% 
+    rename(
+      G1_por = G1,
+      G2_por = G2,
+      G3_por = G3, 
+      absence_por = absences,
+      failures_por = failures,
+      paid_por = paid
+    )
+  ) %>% 
+    rowwise() %>%
+      mutate(
+        absences_mean = mean(absence_mat, absence_por),
+        final_grade = mean(G3_mat, G3_por),
+        failures = mean(failures_mat, failures_por),
+        paid_tutor = if_else(paid_mat=="yes" | paid_por=="yes", "yes", "no")
+      ) %>% 
+      select(-ends_with("por"), -ends_with("_mat"))
+  
+```
+Include: 
+```{r descriptions}
+descrip <- describe(df_both)
+descrip_por <- describe(df_por)
+decrip_mat <- describe(df_mat)
 ```
 
-## Data Exploration
-
-Include: 
-
-* Summary statistics means, medians, quartiles, 
-* Missing value information
 * EDA
-  * The dataframe df_mat contains 395 entries (rows) with 33 columns.
-  * The data set df_por contains 649 entries (rows) with 33 columns. 
+  * The dataframe df_mat contains 395 entries (rows) with 33 columns, representing values related to a math class
+  * The data set df_por contains 649 entries (rows) with 33 columns, representing values related to a Portuguese class 
+  * The combined data set df_both contains ```nrows(df_both)``` with ```length(df_both)``` columns.
   * The data types of the columns include integers (int64) and objects (object).
   * The columns represent various features of the student data set such as personal and family characteristics, academic performance, and social activities.
   * Some of the columns include: **school**, **sex**, **age**, **address**, **family size**, **parents' education**, **mother and father's occupation**, **travel time**, **study time**, **number of failures**, **support received from school**, **family**, **extra-curricular**, **activities**, **health**, and **academic grades**.
 
-```{r}
-df_mat <- read.csv("https://raw.githubusercontent.com/seung-m1nsong/602/main/Final/student-mat.csv")
-df_por <- read.csv("https://raw.githubusercontent.com/seung-m1nsong/602/main/Final/student-por.csv")
-```
-
 ### Overall Statistics
+To gain comprehensive insights, we can merge *df_mat* and *df_por* data sets and analyze their collective statistics by looking at studends in both classes. 
 
-To gain comprehensive insights, we can merge *df_mat* and *df_por* data sets and analyze their collective statistics. There are 1044 observations (or cases) and 33 variables (or columns) in the df_student data set.
-
-When examining the distinctive variables in the **df_student**, a few noteworthy ones stand out:
+When examining the distinctive variables in the **df_both**, a few noteworthy ones stand out:
 
 * failures:
-  * The average is shown as 0.26, but considering that the maximum value is 3, it seems that some students have failed in several subjects in the previous semester.
-  * The skew value is 2.78, which is a very large positive value, indicating that the data is skewed to the right.
+  * The average is shown as ```round(mean(df_both$failures), 2)```, but considering that the maximum value is ```max(df_both$failures)```, it seems that some students have failed in several subjects in the previous semester.
+  * The skew value is ```descrip["failures", "skew"]```, which is a very large positive value, indicating that the data is skewed to the right.
 
 * travel time:
-  * The average is 1.52, and it seems that most students take a relatively short time to school.
-  * The skewness value is 1.37, which is positive and indicates that the data is skewed to the right.
+  * The average is ```descrip["traveltime", "skew"]```, and it seems that most students take a relatively short time to school.
+  * The skewness value is ```descrip["traveltime", "skew"]```, which is positive and indicates that the data is skewed to the right.
 
 * absences:
-  * The average is 4.43, indicating that on average students missed about 4 days.
+  * The average is ```descrip["absences", "mean"]```, indicating that on average students missed about 4 days.
   * Since the maximum value is 75, which is a very large value, it is possible that some students have many absences.
-  * The skewness value is 3.73, which is a very large positive value, indicating that the data is very skewed to the right.
+  * The skewness value is ```descrip["absences", "skew"]```, which is a very large positive value, indicating that the data is very skewed to the right.
 
 * Dalc (workday drinking):
-  * The average is 1.49, and most students seem to be drinking relatively little on workdays.
-  * The skewness value is 2.15, which is positive and indicates that the data is skewed to the right.
+  * The average is ```descrip["Dalc", "mean"]```, and most students seem to be drinking relatively little on workdays.
+  * The skewness value is ```descrip["Dalc", "skew"]```, which is positive and indicates that the data is skewed to the right.
 
-* Average Drinking: During the week, students average about 2.28 units of drinking.
+* Average Drinking: During the week, students average about ```descrip["Walc", "mean"]``` units of drinking.
   * The standard deviation of the drinking amount is 1.29, showing the degree of scattering of the data. Most students appear to have weekday alcohol consumption spread around the average.
-  * The skewness value has a positive value of 0.62, and the distribution type is skewed to the right. That said, some students are likely to consume relatively more alcohol during the week.
+  * The skewness value has a positive value of ```descrip["Walc", "skew"]```, and the distribution type is skewed to the right. That said, some students are likely to consume relatively more alcohol during the week.
   
 * health:
-  * The average is 3.54, and the average health status of students seems to be in the middle.
-  * A negative skewness value of -0.50 indicates that the data is slightly skewed to the left.
+  * The average is ```descrip["health", "mean"]```, and the average health status of students seems to be in the middle.
+  * A negative skewness value of ```descrip["health", "skew"]``` indicates that the data is slightly skewed to the left.
 
-```{r}
-df_student <- rbind(df_mat, df_por) 
-describe(df_student)
-#nrow(df_student)
-#ncol(df_student)
-```
+`A full descriptive summary of variables in included in Appendix 2. 
 
 ### Basic Plots
-```{r echo=FALSE}
-#mat <- as.data.frame(mat)
-df_long <- df_student 
-df_long %>% gather() %>% ggplot(aes(x= value)) + geom_histogram(stat = "count", fill = "skyblue") + facet_wrap(~key, scales = 'free', ncol=7)
-```
+Basic plots of numeric variables help us understand if they have a normal distribution -- necessary to undestand if a particular model type will be appropriate. In general, we can see most features are not normally distributed, meaning that linear regression is not likely to have good predictive value. Basic plots are included in Appendix 3.
 
 
 ### Correlation
 
-When considering the distribution of *traveltime*, *studytime*, *failures*,	*famrel*, *freetime*, *goout*, *Dalc*, *Walc*, *health*, and *absences* across different G3 categories, it becomes evident that these variables show a relatively even distribution within each G3 group.
+When considering the distribution of *traveltime*, *studytime*, *failures*,	*famrel*, *freetime*, *goout*, *Dalc*, *Walc*, *health*, and *absences* across different categories, it becomes evident that these variables show a relatively even distribution within each G3 group.
 
-```{r echo=FALSE}
-corrplot(cor(df_student[,sapply(df_student, is.numeric)], use = "complete.obs"), type="upper", diag = FALSE, col=brewer.pal(n=10, name="Paired"))
+We establish the presences or absence of multicollinearity in order to again determine the suitability of different model approaches, or determine if we should consider dropping some variables.
+
+We can see that mother's and father's education (`Medu` and `Fadu`) as well as daily and weekly alcholol consumption (`Dalc` and `Walc`) are highly correlate.
+
+```{r corrplot}
+corrplot(cor(df_both %>% select(-final_grade) %>% select_if(is.numeric)), type="upper", diag = FALSE)
 ```
+We can use box plots to understand the impact of factor variables on the target final grade. We can see that `failures` jumps out as having significant predictive value.
 
-```{r echo=FALSE}
-p1 <- df_student %>% na.omit() %>% ggplot(aes(factor(G3), traveltime)) + geom_boxplot()
-p2 <- df_student %>% na.omit() %>% ggplot(aes(factor(G3), studytime)) + geom_boxplot()
-p3 <- df_student %>% na.omit() %>% ggplot(aes(factor(G3), failures)) + geom_boxplot()
-p4 <- df_student %>% na.omit() %>% ggplot(aes(factor(G3), famrel)) + geom_boxplot()
-p5 <- df_student %>% na.omit() %>% ggplot(aes(factor(G3), freetime)) + geom_boxplot()
-p6 <- df_student %>% na.omit() %>% ggplot(aes(factor(G3), goout)) + geom_boxplot()
-p7 <- df_student %>% na.omit() %>% ggplot(aes(factor(G3), Dalc)) + geom_boxplot()
-p8 <- df_student %>% na.omit() %>% ggplot(aes(factor(G3), Walc)) + geom_boxplot()
-p9 <- df_student %>% na.omit() %>% ggplot(aes(factor(G3), health)) + geom_boxplot()
-p10<- df_student %>% na.omit() %>% ggplot(aes(factor(G3), absences)) + geom_boxplot()
+```{r boxplots}
+p1 <- df_both %>% ggplot(aes(factor(traveltime), final_grade)) + geom_boxplot()
+p2 <- df_both %>% ggplot(aes(factor(studytime), final_grade)) + geom_boxplot()
+p3 <- df_both %>% na.omit() %>% ggplot(aes( factor(failures), final_grade)) + geom_boxplot()
+p4 <- df_both %>% na.omit() %>% ggplot( aes(factor(famrel), final_grade)) + geom_boxplot()
+p5 <- df_both %>% na.omit() %>% ggplot( aes(factor(freetime), final_grade)) + geom_boxplot()
+p6 <- df_both %>% na.omit() %>% ggplot( aes(factor(goout), final_grade)) + geom_boxplot()
+p7 <- df_both %>% na.omit() %>% ggplot( aes(factor(Dalc), final_grade)) + geom_boxplot()
+p8 <- df_both %>% na.omit() %>% ggplot( aes(factor(Walc), final_grade)) + geom_boxplot()
+p9 <- df_both %>% na.omit() %>% ggplot( aes(factor(health), final_grade)) + geom_boxplot()
+p10<- df_both %>% na.omit() %>% ggplot( aes(factor(Medu), final_grade)) + geom_boxplot()
 
 #p4 <- train_df %>% na.omit() %>% ggplot(aes(pH, FixedAcidity)) + geom_point(alpha=.1) + geom_smooth()
-grid.arrange(p1, p2, p3, p4, p5, p6, p7,p8,p9,p10, ncol=2) 
+grid.arrange(p1, p2, p3, p4, p5, p6, p7,p8,p9,p10, ncol=4) 
+```
+
+In order to determine how best to measure overall student achievement across the classes, we evaluate the correlation between `G3_mat` and `G3_por`. In general, it appears that these correlation between these two subjects is quite high, especially if we omit final grades of "0" from consideration; this is helpful because it gives us a sense of the upper bound of how much variation in achievement can be explained by other features -- this correlation, after all, is for final grades for different classes but for the same students.
+
+```{r}
+x <- "Portuguese Final Grade"
+y <- "Math Final Grade"
+final_grades_coef <- cor(df_both$G3_mat, df_both$G3_por, use="pairwise.complete.obs")
+df_both %>% na.omit() %>% ggplot(aes(G3_mat, G3_por)) + 
+  geom_point(position="jitter") +
+  ggtitle(
+    paste(
+    "Correlation between final grades in Math and Portuguese,",
+    round(final_grades_coef, 2)
+    )) + 
+  xlab(x) + 
+  ylab(y)
+  
+
+nonzeroes <- df_both %>% na.omit() %>% subset(G3_por > 0 & G3_mat >0)
+final_grades_coef <- cor(nonzeroes$G3_mat, nonzeroes$G3_por, use="pairwise.complete.obs")
+nonzeroes  %>%
+  ggplot(aes(G3_mat, G3_por)) + 
+  geom_point(position="jitter") +
+  ggtitle(
+    paste(
+    "Correlation between final grades omitting grades of zero,",
+    round(final_grades_coef, 2)
+    )) + 
+  xlab(x) + 
+  ylab(y)
+ 
 ```
 
 ### Missing values
 
-The data set is complete with no missing values.
-```{r echo=FALSE}
-nrow(df_mat[is.na(df_mat),])
-nrow(df_por[is.na(df_por),])
-```
-
-## Data Preparation
-
-### Merging datasets
-
-Includes: 
-
-* Merging data sets
-* Renaming columns
-* Adding new columns
-* Replacing binary values
-* Remove rows
-
-Reset the index of **df_student** dataframe that combine above.
-```{r echo=FALSE}
-# Reset the index
-row.names(df_student) <- NULL
-describe(df_student)
-```
+The data set is complete with no missing values; however in merging the two datasets we had to make a decision for how to deal with variables that are subject specific. this treatment is described below. 
 
 ### Renaming columns
-
-change famsup to famEdsup, change Dacl to dayAlc, change Walc to weekAlc, and change goout to friendtime to easier to understand.
-```{r echo=FALSE}
-# Rename columns in df_student
-colnames(df_student)[colnames(df_student) == "famsup"] <- "famEdsup"
-colnames(df_student)[colnames(df_student) == "Walc"] <- "weekAlc"
-colnames(df_student)[colnames(df_student) == "goout"] <- "friendtime"
-```
+We change `famsup` to `famEdsup`, change `Dacl` to `dayAlc`, change `Walc` to `weekAlc`, and change `goout` to `friendtime` so that it is easier to understand. We also change the name of binary values to reflect the 1 value, e.g 
 
 ### Adding new columns
 
-Use the Mutate() method to create a new column named **G1G2avg** and **G1G2avg** for future analysis. 
+We used the dplyr::mutate() method to create a new columns in the `df_both` data set:
+`final_grade`: an average of the final grade for both classes
+`absences_mean`:  average absences reported across both classes
+`parentEdu`: sum of `Medu` + `Fedu` to remove a collinearity and combine parental education into a single variable
+`paid_tutor`: this column is marked as "yes" if the student receives paid tutoring in either subject
 
-```{r echo=FALSE}
-# create a new column named 'G1G2avg' with the value 'mat' and 'por'
-df_student <- df_student %>% mutate(G1G2avg = (G1 + G2)/2)
-print(head(df_student))
-
-# create a new column named 'G1G2G3avg' with the value 'mat' and 'por'
-df_student<- df_student%>% mutate(G1G2G3avg = round((G1 + G2 + G3)/3, 1))
-print(head(df_student))
-
-# create a new column named 'class' with the value 'mat' and 'por'
-df_student$class <- 'mat'
-df_student$class <- 'por'
-
-# Print total G1G2G3avg
-total_avg <- mean(df_student$G1G2G3avg)
-print(total_avg)
+```{r new-vars}
+df_both$parentEdu <- df_both$Medu + df_both$Fedu
 ```
+
 
 ### Replacing binary values
 
-Changing binary values (yes and no) to 1 and 0 can be beneficial in data analysis because it allows for easier computation and comparison of values. For example, it allows me to perform mathematical operations and comparisons more easily. It also enables the use of machine learning algorithms that require numerical input.
-```{r echo=FALSE}
-df_student[df_student == "yes" | df_student == "no"] <- c(1, 0)
+For easier computation and interpretation of results, we replace all binary data ("yes", "no"; "rural" or "urban"; "m" or "f") with 1 or 0.
+```{r binary}
 
-df_student$schoolsup <- as.numeric(df_student$schoolsup)
-df_student$famEdsup <- as.numeric(df_student$famEdsup)
-df_student$paid <- as.numeric(df_student$paid)
-df_student$activities <- as.numeric(df_student$paid)
-df_student$nursery <- as.numeric(df_student$nursery)
-df_student$higher <- as.numeric(df_student$higher)
-df_student$internet <- as.numeric(df_student$internet)
-df_student$romantic <- as.numeric(df_student$romantic)
+binary <- function(df, col, level1="yes", level0="no"){
+  df[[col]][df[[col]]==level1] <- 1
+  df[[col]][df[[col]]==level0] <- 0
+  return(df[[col]])
+}
 
-
-df_student$traveltime <- as.numeric(df_student$traveltime)
-df_student$studytime <- as.numeric(df_student$studytime)
-df_student$failures <- as.numeric(df_student$failures)
-df_student$famrel <- as.numeric(df_student$famrel)
-df_student$freetime <- as.numeric(df_student$freetime)
-df_student$friendtime <- as.numeric(df_student$friendtime)
-df_student$Dalc  <- as.numeric(df_student$Dalc)
-df_student$weekAlc <- as.numeric(df_student$weekAlc)
-df_student$health <- as.numeric(df_student$health)
-df_student$absences  <- as.numeric(df_student$absences)
-df_student$G1 <- as.numeric(df_student$G1)
-df_student$G2 <- as.numeric(df_student$G2)
-df_student$G3 <- as.numeric(df_student$G3)
-
-
-str(df_student)
-
-head(df_student)
+df_both$schoolsup <- binary(df_both, "schoolsup")
+df_both$famsup <- binary(df_both, "famsup")
+df_both$paid_tutor <- binary(df_both, "paid_tutor")
+df_both$activities <- binary(df_both, "activities")
+df_both$nursery <- binary(df_both, "nursery")
+df_both$higher <- binary(df_both, "higher")
+df_both$internet <- binary(df_both, "internet")
+df_both$romantic <- binary(df_both, "romantic")
+df_both$sex <- binary(df_both, "sex", "F", "M")
+df_both$Pstatus <- binary(df_both, "Pstatus", "A", "T")
+df_both$address <- binary(df_both, "address", "R", "U")
+df_both$famsize <- binary(df_both, "famsize", "GT3", "LE3")
 ```
 
+```{r rename}
+df_both <- df_both %>% rename(
+  famEdsup = famsup,
+  sex_F = sex,
+  weekAlc = Walc,
+  friedtime = goout,
+  rural = address,
+  par_apart = Pstatus,
+  friendtime = goout,
+  fam_large = famsize
+)
+  
+```
 ### Remove rows
 
 Any record that has a value of 0 for any of the three exams may indicate that the test was not taken or abandoned, and such records will be removed from the data set to avoid interference with the analysis
@@ -514,39 +540,72 @@ Data source: P. Cortez and A. Silva. Using Data Mining to Predict Secondary Scho
 ## Appendix 1: Data Dictionary
 (from [Kaggle](https://www.kaggle.com/datasets/uciml/student-alcohol-consumption))
 
-* *school* - student's school (binary: 'GP' - Gabriel Pereira or 'MS' - Mousinho da Silveira)
-* *sex* - student's sex (binary: 'F' - female or 'M' - male)
-* *age* - student's age (numeric: from 15 to 22)
-* *address* - student's home address type (binary: 'U' - urban or 'R' - rural)
-* *famsize* - family size (binary: 'LE3' - less or equal to 3 or 'GT3' - greater than 3)
-* *Pstatus* - parent's cohabitation status (binary: 'T' - living together or 'A' - apart)
-* * *Medu* - mother's education (numeric: 0 - none, 1 - primary education (4th grade), 2 – 5th to 9th grade, 3 – secondary education or 4 – * *higher* education)
-* *Fedu* - father's education (numeric: 0 - none, 1 - primary education (4th grade), 2 – 5th to 9th grade, 3 – secondary education or 4 – higher education)
-* *Mjob* - mother's job (nominal: 'teacher', 'health' care related, civil 'services' (e.g. administrative or police), 'at_home' or 'other')
-* *Fjob* - father's job (nominal: 'teacher', 'health' care related, civil 'services' (e.g. administrative or police), 'at_home' or 'other')
-* *reason* - reason to choose this school (nominal: close to 'home', school 'reputation', 'course' preference or 'other')
-* *guardian* - student's guardian (nominal: 'mother', 'father' or 'other')
-* *traveltime* - home to school travel time (numeric: 1 - <15 min., 2 - 15 to 30 min., 3 - 30 min. to 1 hour, or 4 - >1 hour)
-* *studytime* - weekly study time (numeric: 1 - <2 hours, 2 - 2 to 5 hours, 3 - 5 to 10 hours, or 4 - >10 hours)
-* *failures* - number of past class failures (numeric: n if 1<=n<3, else 4)
-* *schoolsup* - extra educational support (binary: yes or no)
-* *famsup* - family educational support (binary: yes or no)
-* *paid* - extra paid classes within the course subject (Math or Portuguese) (binary: yes or no)
+* *absences* - number of school absences (numeric: from 0 to 93)
+* *absences_mean* - mean reported absences from both classes for students in Portuguese and Math
 * *activities* - extra-curricular activities (binary: yes or no)
-* *nursery* - attended nursery school (binary: yes or no)
+* *address* - student's home address type (binary: 'U' - urban or 'R' - rural)
+* *age* - student's age (numeric: from 15 to 22)
+* *Dalc* / *dayAlc* - workday alcohol consumption (numeric: from 1 - very low to 5 - very high) *renamed
+* *failures* - number of past class failures (numeric: n if 1<=n<3, else 4)
+* *famsize* - family size (binary: 'LE3' - less or equal to 3 or 'GT3' - greater than 3)
+* *famsup* / *famEdsup*- family educational support (binary: yes or no) *renamed
+* *Fedu* - father's education (numeric: 0 - none, 1 - primary education (4th grade), 2 – 5th to 9th grade, 3 – secondary education or 4 – higher education)
+* *Fjob* - father's job (nominal: 'teacher', 'health' care related, civil 'services' (e.g. administrative or police), 'at_home' or 'other')
+* *famrel* - quality of family relationships (numeric: from 1 - very bad to 5 - excellent)
+* *freetime* - free time after school (numeric: from 1 - very low to 5 - very high) *renamed
+* *goout* / *friendtime* - going out with friends (numeric: from 1 - very low to 5 - very high)
+* *guardian* - student's guardian (nominal: 'mother', 'father' or 'other')
+* *health* - current health status (numeric: from 1 - very bad to 5 - very good)
 * *higher* - wants to take higher education (binary: yes or no)
 * *internet* - Internet access at home (binary: yes or no)
+* *Medu* - mother's education (numeric: 0 - none, 1 - primary education (4th grade), 2 – 5th to 9th grade, 3 – secondary education or 4 – * *higher* education)
+* *Mjob* - mother's job (nominal: 'teacher', 'health' care related, civil 'services' (e.g. administrative or police), 'at_home' or 'other')
+* *nursery* - attended nursery school (binary: yes or no)
+* *parentEdu* - sum of mother's + fathers education level
+* *paid* - extra paid classes within the course subject (Math or Portuguese) (binary: yes or no)
+* *Pstatus* - parent's cohabitation status (binary: 'T' - living together or 'A' - apart)
+* *reason* - reason to choose this school (nominal: close to 'home', school 'reputation', 'course' preference or 'other')
 * *romantic* - with a romantic relationship (binary: yes or no)
-* *famrel* - quality of family relationships (numeric: from 1 - very bad to 5 - excellent)
-* *freetime* - free time after school (numeric: from 1 - very low to 5 - very high)
-* *goout* - going out with friends (numeric: from 1 - very low to 5 - very high)
-* *Dalc* - workday alcohol consumption (numeric: from 1 - very low to 5 - very high)
-* *Walc* - weekend alcohol consumption (numeric: from 1 - very low to 5 - very high)
-* *health* - current health status (numeric: from 1 - very bad to 5 - very good)
-* *absences* - number of school absences (numeric: from 0 to 93)
+* *school* - student's school (binary: 'GP' - Gabriel Pereira or 'MS' - Mousinho da Silveira)
+* *schoolsup* - extra educational support (binary: yes or no)
+* *sex* - student's sex (binary: 'F' - female or 'M' - male)
+* *studytime* - weekly study time (numeric: 1 - <2 hours, 2 - 2 to 5 hours, 3 - 5 to 10 hours, or 4 - >10 hours)
+* *traveltime* - home to school travel time (numeric: 1 - <15 min., 2 - 15 to 30 min., 3 - 30 min. to 1 hour, or 4 - >1 hour)
+* *Walc* / *weekAlc* - weekend alcohol consumption (numeric: from 1 - very low to 5 - very high) *renamed
 
-These grades are related with the course subject, Math or Portuguese:
+
+These grades are related with the course subject, Math or Portuguese and are dropped for the joint analysis:
 
 *G1* - first period grade (numeric: from 0 to 20)
 *G2* - second period grade (numeric: from 0 to 20)
-*G3* - final grade (numeric: from 0 to 20, output target)
+*G3* - final grade (numeric: from 0 to 20)
+
+This is the target variable:
+*final_grade* - final grade averaged from both classes (numeric: from 0 to 20, output target)
+
+### Appendix 2: Summary Statistics
+```{r summary}
+descrip
+descrip_por
+descrip_mat
+```
+
+### Appendix 3: Basic Plots
+
+#### Students in Both Classes
+```{r basicPlots}
+
+basicp <- function(df, color){
+df_long <- df %>% select_if(is.numeric)
+p <- df_long %>% gather() %>% ggplot(aes(x= value)) + geom_histogram(stat = "count", fill = color) + facet_wrap(~key, scales = 'free')
+print(p)
+}
+
+basicp (df_both, "skyblue")
+```
+
+#### Students in Math
+```basicp(df_mat, "pink")```
+
+#### Students in Portuguese
+```basicp(df_por, "darkblue")```
