@@ -1,0 +1,15 @@
+gridExtra
+psych
+corrplot
+RColorBrewer
+tidyr
+ggplot2
+MASS
+rpart
+knitr
+dplyr
+randomForest
+Metrics
+lattice
+caret
+leaps
