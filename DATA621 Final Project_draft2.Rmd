@@ -131,7 +131,7 @@ The first task is to merge the data sets, identifying which students are identic
 
 ```{r merge}
 
-df_mat <- read.csv("https://raw.githubusercontent.com/seung-m1nsong/602/main/Final/student-mat.csv") 
+df_mat <- read.csv("https://raw.githubusercontent.com/seung-m1nsong/602/main/Final/student-mat.csv")
 
 df_por <- read.csv("https://raw.githubusercontent.com/seung-m1nsong/602/main/Final/student-por.csv")
 
@@ -160,7 +160,8 @@ df_both <- dplyr::inner_join(
         absences_mean = mean(absence_mat, absence_por),
         final_grade = mean(G3_mat, G3_por),
         failures = mean(failures_mat, failures_por),
-        paid_tutor = if_else(paid_mat=="yes" | paid_por=="yes", "yes", "no")
+        paid_tutor = if_else(paid_mat=="yes" | paid_por=="yes", "yes", "no"),
+        missed_exam = if_else(G1_por==0 | G2_por==0 | G1_mat==0 | G2_mat==0, 1, 0)
       ) %>% 
       select(-ends_with("por"), -ends_with("_mat"))
   
@@ -227,55 +228,7 @@ We can see that mother's and father's education (`Medu` and `Fadu`) as well as d
 ```{r corrplot}
 corrplot(cor(df_both %>% select(-final_grade) %>% select_if(is.numeric)), type="upper", diag = FALSE)
 ```
-We can use box plots to understand the impact of factor variables on the target final grade. We can see that `failures` jumps out as having significant predictive value.
 
-```{r boxplots}
-p1 <- df_both %>% ggplot(aes(factor(traveltime), final_grade)) + geom_boxplot()
-p2 <- df_both %>% ggplot(aes(factor(studytime), final_grade)) + geom_boxplot()
-p3 <- df_both %>% na.omit() %>% ggplot(aes( factor(failures), final_grade)) + geom_boxplot()
-p4 <- df_both %>% na.omit() %>% ggplot( aes(factor(famrel), final_grade)) + geom_boxplot()
-p5 <- df_both %>% na.omit() %>% ggplot( aes(factor(freetime), final_grade)) + geom_boxplot()
-p6 <- df_both %>% na.omit() %>% ggplot( aes(factor(goout), final_grade)) + geom_boxplot()
-p7 <- df_both %>% na.omit() %>% ggplot( aes(factor(Dalc), final_grade)) + geom_boxplot()
-p8 <- df_both %>% na.omit() %>% ggplot( aes(factor(Walc), final_grade)) + geom_boxplot()
-p9 <- df_both %>% na.omit() %>% ggplot( aes(factor(health), final_grade)) + geom_boxplot()
-p10<- df_both %>% na.omit() %>% ggplot( aes(factor(Medu), final_grade)) + geom_boxplot()
-
-#p4 <- train_df %>% na.omit() %>% ggplot(aes(pH, FixedAcidity)) + geom_point(alpha=.1) + geom_smooth()
-grid.arrange(p1, p2, p3, p4, p5, p6, p7,p8,p9,p10, ncol=4) 
-```
-
-In order to determine how best to measure overall student achievement across the classes, we evaluate the correlation between `G3_mat` and `G3_por`. In general, it appears that these correlation between these two subjects is quite high, especially if we omit final grades of "0" from consideration; this is helpful because it gives us a sense of the upper bound of how much variation in achievement can be explained by other features -- this correlation, after all, is for final grades for different classes but for the same students.
-
-```{r}
-x <- "Portuguese Final Grade"
-y <- "Math Final Grade"
-final_grades_coef <- cor(df_both$G3_mat, df_both$G3_por, use="pairwise.complete.obs")
-df_both %>% na.omit() %>% ggplot(aes(G3_mat, G3_por)) + 
-  geom_point(position="jitter") +
-  ggtitle(
-    paste(
-    "Correlation between final grades in Math and Portuguese,",
-    round(final_grades_coef, 2)
-    )) + 
-  xlab(x) + 
-  ylab(y)
-  
-
-nonzeroes <- df_both %>% na.omit() %>% subset(G3_por > 0 & G3_mat >0)
-final_grades_coef <- cor(nonzeroes$G3_mat, nonzeroes$G3_por, use="pairwise.complete.obs")
-nonzeroes  %>%
-  ggplot(aes(G3_mat, G3_por)) + 
-  geom_point(position="jitter") +
-  ggtitle(
-    paste(
-    "Correlation between final grades omitting grades of zero,",
-    round(final_grades_coef, 2)
-    )) + 
-  xlab(x) + 
-  ylab(y)
- 
-```
 
 ### Missing values
 
@@ -291,6 +244,7 @@ We used the dplyr::mutate() method to create a new columns in the `df_both` data
 `absences_mean`:  average absences reported across both classes
 `parentEdu`: sum of `Medu` + `Fedu` to remove a collinearity and combine parental education into a single variable
 `paid_tutor`: this column is marked as "yes" if the student receives paid tutoring in either subject
+`missed_exam`: this column indicates whether a student missed an exam in any class
 
 ```{r new-vars}
 df_both$parentEdu <- df_both$Medu + df_both$Fedu
@@ -331,71 +285,125 @@ df_both <- df_both %>% rename(
   rural = address,
   par_apart = Pstatus,
   friendtime = goout,
-  fam_large = famsize
+  fam_large = famsize,
+  dayAlc = Dalc
 )
   
 ```
 ### Remove rows
 
-Any record that has a value of 0 for any of the three exams may indicate that the test was not taken or abandoned, and such records will be removed from the data set to avoid interference with the analysis
+If the student received a 0 on the final exam, we remove them as they received their final grade due to a missing exam as opposed to other factors.
 
-```{r echo=FALSE}
-df_student <- df_student[df_student$G1 != 0 & df_student$G2 != 0 & df_student$G3 != 0, ]
+```{r remove}
+df_both <- df_both %>% filter(missed_exam == 0)
 ```
 
 ## Data Visualization
+We can use box plots to understand the impact of factor variables on the target final grade. We can see that `failures` jumps out as having significant predictive value, whle the presence of absence of a paid tutor makes little difference
+
+```{r boxplots}
+p1 <- df_both %>% ggplot(aes(factor(traveltime), final_grade)) + geom_boxplot() + xlab("Travel Time")
+p2 <- df_both %>% ggplot(aes(factor(studytime), final_grade)) + geom_boxplot() + xlab("Study Time")
+p3 <- df_both %>% ggplot(aes( factor(failures), final_grade)) + geom_boxplot() + xlab("Failures")
+p4 <- df_both %>% ggplot( aes(factor(famrel), final_grade)) + geom_boxplot() + xlab("Fam Rel")
+p5 <- df_both %>% ggplot( aes(factor(freetime), final_grade)) + geom_boxplot()+ xlab("Freetime")
+p6 <- df_both %>% ggplot( aes(factor(parentEdu), final_grade)) + geom_boxplot() + xlab("Parent Edu")
+p7 <- df_both %>% ggplot( aes(factor(dayAlc), final_grade)) + geom_boxplot() + xlab("Daily Alc")
+p8 <- df_both %>% ggplot( aes(factor(weekAlc), final_grade)) + geom_boxplot() + xlab("Weekly Alc")
+p9 <- df_both %>% ggplot( aes(factor(health), final_grade)) + geom_boxplot() + xlab("Health")
+p10<- df_both %>% ggplot( aes(factor(paid_tutor), final_grade)) + geom_boxplot() + xlab("Paid Tutuor")
+p11<- df_both %>% ggplot( aes(factor(rural), final_grade)) + geom_boxplot() + xlab("Rural")
+p12<- df_both %>% ggplot( aes(factor(sex_F), final_grade)) + geom_boxplot() + xlab("Female")
+p13<- df_both %>% ggplot( aes(factor(fam_large), final_grade)) + geom_boxplot() + xlab("Big Fam")
+p14<- df_both %>% ggplot( aes(factor(romantic), final_grade)) + geom_boxplot() + xlab("Romantic")
+p15<- df_both %>% ggplot( aes(factor(internet), final_grade)) + geom_boxplot() + xlab("Internet")
+p16<- df_both %>% ggplot( aes(factor(par_apart), final_grade)) + geom_boxplot() + xlab("Parents Sep.")
+p17<- df_both %>% ggplot( aes(factor(friendtime), final_grade)) + geom_boxplot() + xlab("Friend Time")
+p18<- df_both %>% ggplot( aes(factor(activities), final_grade)) + geom_boxplot() + xlab("Activities")
+
+grid.arrange(p1, p2, p3, p4, p5, p6, p7,p8,p9,p10, p11, p12,p13, p14, p15, p16, p17, p18, ncol=6) 
+```
+
+In order to determine how best to measure overall student achievement across the classes, we evaluate the correlation between `G3_mat` and `G3_por`. In general, it appears that these correlation between these two subjects is quite high, especially if we omit final grades of "0" from consideration; this is helpful because it gives us a sense of the upper bound of how much variation in achievement can be explained by other features -- this correlation, after all, is for final grades for different classes but for the same students.
+
+```{r cor_grades}
+x <- "Portuguese Final Grade"
+y <- "Math Final Grade"
+final_grades_coef <- cor(df_both$G3_mat, df_both$G3_por, use="pairwise.complete.obs")
+df_both %>% na.omit() %>% ggplot(aes(G3_mat, G3_por)) + 
+  geom_point(position="jitter") +
+  ggtitle(
+    paste(
+    "Correlation between final grades in Math and Portuguese,",
+    round(final_grades_coef, 2)
+    )) + 
+  xlab(x) + 
+  ylab(y)
+  
+
+nonzeroes <- df_both %>% na.omit() %>% subset(G3_por > 0 & G3_mat >0)
+final_grades_coef <- cor(nonzeroes$G3_mat, nonzeroes$G3_por, use="pairwise.complete.obs")
+nonzeroes  %>%
+  ggplot(aes(G3_mat, G3_por)) + 
+  geom_point(position="jitter") +
+  ggtitle(
+    paste(
+    "Correlation between final grades omitting grades of zero,",
+    round(final_grades_coef, 2)
+    )) + 
+  xlab(x) + 
+  ylab(y)
+ 
+```
 
 ### Romantic status
 
-In general, students who are in a romantic relationship may have a more challenging time focusing on their studies compared to those who are not. It is crucial to examine whether this is indeed the case.
-
-Although it is not such a big difference, it can be confirmed that male and female students without romactic have better grades.
+In general, students who are in a romantic relationship may have a more challenging time focusing on their studies compared to those who are not. A plot indicates that this may be the case -- especially male students who are not romantically involved appear to have a slightly higher final grade; ANOVA confirms that romantic status and sex both have significant predictive value.
 
 ```{r echo=FALSE}
-# Calculate average of G1G2avg for each combination of romantic status and sex
-avg_romantic_0_female <- mean(df_student[df_student$romantic == 0 & df_student$sex == "F", "G1G2avg"])
-avg_romantic_0_male <- mean(df_student[df_student$romantic == 0 & df_student$sex == "M", "G1G2avg"])
-avg_romantic_1_female <- mean(df_student[df_student$romantic == 1 & df_student$sex == "F", "G1G2avg"])
-avg_romantic_1_male <- mean(df_student[df_student$romantic == 1 & df_student$sex == "M", "G1G2avg"])
+# Calculate average of final_grade for each combination of romantic status and sex
+df_both %>% 
+  ggplot( aes(factor(sex_F), final_grade, fill = romantic)) + 
+  geom_boxplot() + 
+  xlab("Sex") + 
+  ylab("Final Grade") + 
+  ggtitle("Final Grade by Sex & Romantic Status")
 
-# Create a bar plot
-ggplot(data = NULL, aes(x = factor(c("Female = 0", "Male = 0", "Female = 1", "Male = 1")), y = c(avg_romantic_0_female, avg_romantic_0_male, avg_romantic_1_female, avg_romantic_1_male), fill = c("#C44E52", "#C44E52", "#4C72B0", "#4C72B0"))) +
-  geom_bar(stat = "identity", width = 0.6) +
-  xlab("Sex and Romantic Status") + ylab("Average G1G2avg") +
-  ggtitle("Average G1G2avg by Sex and Romantic Status") +
-  guides(fill = FALSE)
+stats::aov(final_grade ~ romantic + sex_F, df_both) %>%
+summary()
 
 ```
 
 ### Study Time
 
-The findings suggest that students who study for a longer duration have a higher average score compared to those who study for a shorter duration. 
-```{r echo=FALSE}
-# Calculate average of G1G2G3avg per studytime
-study_avg <- aggregate(df_student$G1G2G3avg, by = list(df_student$studytime), FUN = mean)
+Although at first glance the findings suggest that students who study for a longer duration have a higher average score compared to those who study for a shorter duration, study time is not predictive according to ANOVA and we cannot rule out chance.
 
-# Create a bar graph
-barplot(study_avg$x, names.arg = study_avg$Group.1, col = "orange", xlab = "Studytime",
-        ylab = "Average G1G2G3 Score", main = "Average G1G2G3 Score by Study")
+```{r echo=FALSE}
+df_both %>% 
+  ggplot(aes(y=final_grade, x=factor(studytime), fill=studytime)) + 
+  geom_boxplot() + 
+  xlab("Study Time") + 
+  ylab("Final Grade") + 
+  ggtitle("Final Grade by Study Time")
+
+stats::aov(final_grade ~ studytime, df_both) %>%
+summary()
 ```
 
 ### Internet
 
-The accessibility of the internet has become increasingly important in modern education, as it provides students with access to a vast array of learning materials that might otherwise be unavailable. It is widely recognized that the internet has the potential to enhance students' educational experiences, but it is important to assess whether this potential is being fully realized. Therefore, it is necessary to examine whether the same positive results regarding internet accessibility and academic performance were obtained in the experiment.
-
-The following graph indicates that the difference in academic performance between students with and without Internet access is negligible.
+The following graph indicates that the difference in academic performance between students with and without Internet access is negligible; again, however, ANOVA results indicate that we cannot rule out the null hypothesis that chance may explain the difference in means between the two groups.
 
 ```{r echo=FALSE}
-df_student %>%
-  group_by(internet) %>%
-  summarise(G1G2G3avg_mean = mean(G1G2G3avg)) %>%
-  ggplot(aes(x = factor(internet), y = G1G2G3avg_mean, fill = factor(internet))) +
-  geom_bar(stat = "identity", width = 0.5) + 
-  scale_fill_manual(values = c("#69b3a2", "skyblue")) + 
-  labs(title = "Average Grades between Students with Internet and without Internet", 
-       x = "Internet Access", 
-       y = "Average G1G2G3 Scores") + 
-  scale_x_discrete(labels = c("No", "Yes"))
+df_both %>% 
+  ggplot(aes(y=final_grade, x=factor(internet), fill=internet)) + 
+  geom_boxplot() + 
+  xlab("Access to Internet") + 
+  ylab("Final Grade") + 
+  ggtitle("Final Grade by Internet Access")
+
+stats::aov(final_grade ~ internet, df_both) %>%
+summary()
 
 ```
 
